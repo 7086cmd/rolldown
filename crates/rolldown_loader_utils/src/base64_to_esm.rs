@@ -1,3 +1,3 @@
-pub fn base64_to_esm(source: &str) -> String {
-  ["export default '", source, "';"].concat()
+pub fn base64_to_esm(source: &str) ->  anyhow::Result<String> {
+  Ok(["export default '", source, "';"].concat())
 }
