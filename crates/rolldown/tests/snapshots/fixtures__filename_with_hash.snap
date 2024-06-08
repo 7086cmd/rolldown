@@ -1384,6 +1384,10 @@ expression: "snapshot_outputs.join(\"\\n\")"
 
 - main-!~{000}~.mjs => main-HOErwbTT.mjs
 
+# tests/fixtures/loaders/data_url/png
+
+- main-!~{000}~.mjs => main-VRF9C_Oc.mjs
+
 # tests/fixtures/loaders/data_url/svg
 
 - main-!~{000}~.mjs => main-504-jiHc.mjs

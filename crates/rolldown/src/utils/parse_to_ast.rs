@@ -38,10 +38,9 @@ pub fn parse_to_ast(
     ModuleType::Json => (json_to_esm(&source)?.into(), ParseType::Js),
     ModuleType::Text => (text_to_esm(&source)?.into(), ParseType::Js),
     ModuleType::Base64 => (base64_to_esm(&source)?.into(), ParseType::Js),
-    ModuleType::Binary => (
-      binary_to_esm(&source, options.platform, ROLLDOWN_RUNTIME_RESOURCE_ID)?.into(),
-      ParseType::Js,
-    ),
+    ModuleType::Binary => {
+      (binary_to_esm(&source, options.platform, ROLLDOWN_RUNTIME_RESOURCE_ID).into(), ParseType::Js)
+    }
     ModuleType::DataUrl => (base64_to_esm(&source)?.into(), ParseType::Js),
   };
 
