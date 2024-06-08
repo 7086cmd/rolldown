@@ -24,8 +24,22 @@ pub async fn load_source(
       String::new()
     } else {
       match module_type {
-        ModuleType::Base64 => {
+        ModuleType::Base64 | ModuleType::Binary => {
           rolldown_utils::base64::to_standard_base64(fs.read(resolved_path.path.as_path())?)
+        }
+        ModuleType::DataUrl => {
+          // let extension: &str = resolved_path.path.extension().unwrap().to_str().unwrap(); DO NOT USE `extension` method
+          let extension: &str = resolved_path.path.split('.').last().unwrap();
+          if !["png", "jpg", "jpeg", "gif", "webp", "ico", "svg"].contains(&extension) {
+            return Err(anyhow::anyhow!("Unsupported image extension: {}", resolved_path.path));
+          }
+          let mime = rolldown_utils::mime::image_mime(extension).unwrap();
+          let content: String = if extension == "svg" {
+            fs.read_to_string(resolved_path.path.as_path())?
+          } else {
+            rolldown_utils::base64::to_url_safe_base64(fs.read(resolved_path.path.as_path())?)
+          };
+          format!("data:{mime};base64,{content}")
         }
         _ => fs.read_to_string(resolved_path.path.as_path())?,
       }
