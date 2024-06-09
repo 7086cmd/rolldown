@@ -37,11 +37,10 @@ pub fn parse_to_ast(
     ModuleType::Js => (source, ParseType::Js),
     ModuleType::Json => (json_to_esm(&source)?.into(), ParseType::Js),
     ModuleType::Text => (text_to_esm(&source)?.into(), ParseType::Js),
-    ModuleType::Base64 => (base64_to_esm(&source)?.into(), ParseType::Js),
+    ModuleType::Base64 | ModuleType::DataUrl => (base64_to_esm(&source).into(), ParseType::Js),
     ModuleType::Binary => {
       (binary_to_esm(&source, options.platform, ROLLDOWN_RUNTIME_RESOURCE_ID).into(), ParseType::Js)
     }
-    ModuleType::DataUrl => (base64_to_esm(&source)?.into(), ParseType::Js),
   };
 
   // 2. Parse the source to AST and transform non-js AST to valid JS AST.
