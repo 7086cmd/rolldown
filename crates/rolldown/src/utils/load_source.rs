@@ -30,16 +30,18 @@ pub async fn load_source(
         ModuleType::DataUrl => {
           // let extension: &str = resolved_path.path.extension().unwrap().to_str().unwrap(); DO NOT USE `extension` method
           let extension: &str = resolved_path.path.split('.').last().unwrap();
-          if !["png", "jpg", "jpeg", "gif", "webp", "ico", "svg"].contains(&extension) {
-            return Err(anyhow::anyhow!("Unsupported image extension: {}", resolved_path.path));
-          }
-          let mime = rolldown_utils::mime::image_mime(extension).unwrap();
+          let mime =
+            rolldown_utils::mime::get_data_url_mime_by_extension(extension).ok_or_else(|| {
+              anyhow::anyhow!("Unsupported extension for Data URL format: {}", extension)
+            })?;
           let content: String = if extension == "svg" {
             fs.read_to_string(resolved_path.path.as_path())?
           } else {
-            rolldown_utils::base64::to_url_safe_base64(fs.read(resolved_path.path.as_path())?)
+            let content: String =
+              rolldown_utils::base64::to_url_safe_base64(fs.read(resolved_path.path.as_path())?);
+            ["base64,", &content].concat()
           };
-          format!("data:{mime};base64,{content}")
+          format!("data:{mime};{content}")
         }
         _ => fs.read_to_string(resolved_path.path.as_path())?,
       }

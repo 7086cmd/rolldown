@@ -1390,7 +1390,7 @@ expression: "snapshot_outputs.join(\"\\n\")"
 
 # tests/fixtures/loaders/data_url/svg
 
-- main-!~{000}~.mjs => main-504-jiHc.mjs
+- main-!~{000}~.mjs => main-oJPcjH22.mjs
 
 # tests/fixtures/loaders/txt/empty
 
