@@ -10,12 +10,12 @@ input_file: crates/rolldown/tests/fixtures/loaders/data_url/svg
 
 ```js
 
-//#region rollup.svg
-var rollup_default = 'data:image/svg+xml;<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M19.46 8.64c0 2.47-1.35 4.62-3.34 5.76c-.12.1-.19.26-.12.41l3.41 6.74c.09.21-.05.45-.28.45H6.1l.07-.04c.49-.28 3.89-6.99 7.21-10.17s3.74-2.12 1.91-5.58c0 0 1.41 2.75.21 2.96c-.94.17-3.1-1.92-2.3-3.8c.8-1.84 3.95-1.49 5.4.01c.55.96.86 2.07.86 3.26m-12.3 4.49c-1.32 2.43-2.16 4.2-2.62 5.44V2.31c0-.17.14-.31.31-.31h8.07a6.62 6.62 0 0 1 5.54 3.15C17.62 4.1 16.3 3.5 15 3.5c-2.47 0-3.09.9-7.84 9.63"/></svg>';
+//#region lightning-down.svg
+var lightning_down_default = 'data:image/svg+xml;%3Csvg%20width%3D%22230%22%20height%3D%22249%22%20viewBox%3D%220%200%20230%20249%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Cpath%20d%3D%22M215.093%2084.9549H135.319L147.615%2068.3044L59.4748%2068.1026L16.4174%20127.78H100.093L63.1354%20183.569H0L76.6667%20249L230%20183.569H154.121L215.093%2084.9549Z%22%20fill%3D%22url%28%23paint0_linear_18_3%29%22%2F%3E%0A%3Cpath%20d%3D%22M198.056%200H108.611L96.327%2017.0256H185.483L198.056%200Z%22%20fill%3D%22url%28%23paint1_linear_18_3%29%22%2F%3E%0A%3Cpath%20d%3D%22M173.695%2032.9872H84.8107L71.3426%2051.6539H159.911L173.695%2032.9872Z%22%20fill%3D%22url%28%23paint2_linear_18_3%29%22%2F%3E%0A%3Cdefs%3E%0A%3ClinearGradient%20id%3D%22paint0_linear_18_3%22%20x1%3D%22115%22%20y1%3D%220%22%20x2%3D%22115%22%20y2%3D%22249%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%0A%3Cstop%20offset%3D%220.3125%22%20stop-color%3D%22%23F0DB4F%22%2F%3E%0A%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23FF5B12%22%2F%3E%0A%3C%2FlinearGradient%3E%0A%3ClinearGradient%20id%3D%22paint1_linear_18_3%22%20x1%3D%22115%22%20y1%3D%220%22%20x2%3D%22115%22%20y2%3D%22249%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%0A%3Cstop%20offset%3D%220.3125%22%20stop-color%3D%22%23F0DB4F%22%2F%3E%0A%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23FF5B12%22%2F%3E%0A%3C%2FlinearGradient%3E%0A%3ClinearGradient%20id%3D%22paint2_linear_18_3%22%20x1%3D%22115%22%20y1%3D%220%22%20x2%3D%22115%22%20y2%3D%22249%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%0A%3Cstop%20offset%3D%220.3125%22%20stop-color%3D%22%23F0DB4F%22%2F%3E%0A%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23FF5B12%22%2F%3E%0A%3C%2FlinearGradient%3E%0A%3C%2Fdefs%3E%0A%3C%2Fsvg%3E%0A';
 
 //#endregion
 //#region main.js
-console.log(rollup_default);
+console.log(lightning_down_default);
 
 //#endregion
 ```

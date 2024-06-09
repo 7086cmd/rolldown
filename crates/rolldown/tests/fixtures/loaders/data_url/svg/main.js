@@ -1,3 +1,3 @@
-import rollup from './rollup.svg'
+import lightning_down from './lightning-down.svg'
 
-console.log(rollup)
+console.log(lightning_down)
