@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use oxc::span::SourceType as OxcSourceType;
 use rolldown_common::{ModuleType, NormalizedBundlerOptions};
-use rolldown_loader_utils::{base64_to_esm, binary_to_esm, json_to_esm, text_to_esm};
+use rolldown_loader_utils::{binary_to_esm, json_to_esm, raw_text_to_esm, text_to_esm};
 use rolldown_oxc_utils::{OxcAst, OxcCompiler};
 
 use crate::runtime::ROLLDOWN_RUNTIME_RESOURCE_ID;
@@ -37,7 +37,7 @@ pub fn parse_to_ast(
     ModuleType::Js => (source, ParseType::Js),
     ModuleType::Json => (json_to_esm(&source)?.into(), ParseType::Js),
     ModuleType::Text => (text_to_esm(&source)?.into(), ParseType::Js),
-    ModuleType::Base64 | ModuleType::DataUrl => (base64_to_esm(&source).into(), ParseType::Js),
+    ModuleType::Base64 | ModuleType::DataUrl => (raw_text_to_esm(&source).into(), ParseType::Js),
     ModuleType::Binary => {
       (binary_to_esm(&source, options.platform, ROLLDOWN_RUNTIME_RESOURCE_ID).into(), ParseType::Js)
     }

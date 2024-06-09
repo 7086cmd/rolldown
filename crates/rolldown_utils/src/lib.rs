@@ -11,6 +11,7 @@ pub mod path_buf_ext;
 pub mod path_ext;
 pub mod rayon;
 pub mod rustc_hash;
+pub mod url_encoding;
 pub mod xxhash;
 
 pub use bitset::BitSet;
