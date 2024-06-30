@@ -1,5 +1,7 @@
 // cSpell:disable
 
+use std::collections::HashMap;
+
 use crate::types::{binding_log::BindingLog, binding_log_level::BindingLogLevel};
 use derivative::Derivative;
 use napi::threadsafe_function::ThreadsafeFunction;
@@ -12,6 +14,7 @@ use super::plugin::BindingPluginOrParallelJsPluginPlaceholder;
 
 mod binding_input_item;
 mod binding_resolve_options;
+mod treeshake;
 
 #[napi(object, object_to_js = false)]
 #[derive(Deserialize, Default, Derivative)]
@@ -32,7 +35,9 @@ pub struct BindingInputOptions {
   #[napi(
     ts_type = "undefined | ((source: string, importer: string | undefined, isResolved: boolean) => boolean)"
   )]
-  pub external: Option<ThreadsafeFunction<(String, Option<String>, bool), bool, false>>,
+  pub external: Option<
+    ThreadsafeFunction<(String, Option<String>, bool), bool, (String, Option<String>, bool), false>,
+  >,
   pub input: Vec<BindingInputItem>,
   // makeAbsoluteExternalsRelative?: boolean | 'ifRelativeSource';
   // /** @deprecated Use the "manualChunks" output option instead. */
@@ -43,6 +48,8 @@ pub struct BindingInputOptions {
   // moduleContext?: ((id: string) => string | null | void) | { [id: string]: string };
   // onwarn?: WarningHandlerWithDefault;
   // perf?: boolean;
+  #[serde(skip_deserializing)]
+  #[napi(ts_type = "(BindingBuiltinPlugin | BindingPluginOptions | undefined)[]")]
   pub plugins: Vec<BindingPluginOrParallelJsPluginPlaceholder>,
   pub resolve: Option<BindingResolveOptions>,
   // preserveEntrySignatures?: PreserveEntrySignaturesOption;
@@ -64,6 +71,10 @@ pub struct BindingInputOptions {
   // extra
   pub cwd: String,
   // pub builtins: BuiltinsOptions,
+  pub treeshake: Option<treeshake::BindingTreeshake>,
+
+  pub module_types: Option<HashMap<String, String>>,
 }
 
-pub type BindingOnLog = Option<ThreadsafeFunction<(String, BindingLog), (), false>>;
+pub type BindingOnLog =
+  Option<ThreadsafeFunction<(String, BindingLog), (), (String, BindingLog), false>>;

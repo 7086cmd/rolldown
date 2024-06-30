@@ -40,7 +40,7 @@ pub struct BindingOutputOptions {
   #[serde(skip_deserializing)]
   #[napi(ts_type = "(chunk: RenderedChunk) => MaybePromise<VoidNullable<string>>")]
   pub footer: Option<AddonOutputOption>,
-  #[napi(ts_type = "'esm' | 'cjs'")]
+  #[napi(ts_type = "'es' | 'cjs'")]
   pub format: Option<String>,
   // freeze: boolean;
   // generatedCode: NormalizedGeneratedCodeOptions;
@@ -57,6 +57,8 @@ pub struct BindingOutputOptions {
   // noConflict: boolean;
   // outro: () => string | Promise<string>;
   // paths: OptionsPaths;
+  #[serde(skip_deserializing)]
+  #[napi(ts_type = "(BindingBuiltinPlugin | BindingPluginOptions | undefined)[]")]
   pub plugins: Vec<BindingPluginOrParallelJsPluginPlaceholder>,
   // preferConst: boolean;
   // preserveModules: boolean;
@@ -67,11 +69,13 @@ pub struct BindingOutputOptions {
   #[derivative(Debug = "ignore")]
   #[serde(skip_deserializing)]
   #[napi(ts_type = "(source: string, sourcemapPath: string) => boolean")]
-  pub sourcemap_ignore_list: Option<ThreadsafeFunction<(String, String), bool, false>>,
+  pub sourcemap_ignore_list:
+    Option<ThreadsafeFunction<(String, String), bool, (String, String), false>>,
   #[derivative(Debug = "ignore")]
   #[serde(skip_deserializing)]
   #[napi(ts_type = "(source: string, sourcemapPath: string) => string")]
-  pub sourcemap_path_transform: Option<ThreadsafeFunction<(String, String), String, false>>,
+  pub sourcemap_path_transform:
+    Option<ThreadsafeFunction<(String, String), String, (String, String), false>>,
   // sourcemapExcludeSources: boolean;
   // sourcemapFile: string | undefined;
   // strict: boolean;

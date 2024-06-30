@@ -1,4 +1,4 @@
-use oxc_index::IndexVec;
+use oxc::index::IndexVec;
 use rolldown_common::{
   EntryPoint, EntryPointKind, ExternalModule, ExternalModuleVec, ImportKind, ImportRecordId,
   ImporterRecord, ModuleId, ModuleTable, NormalModule, NormalModuleId, ResolvedRequestInfo,
@@ -167,23 +167,18 @@ impl ModuleLoader {
   #[tracing::instrument(level = "debug", skip_all)]
   pub async fn fetch_all_modules(
     mut self,
-    user_defined_entries: Vec<(Option<String>, ResolvedRequestInfo)>,
+    user_defined_entries: Vec<(String, ResolvedRequestInfo)>,
   ) -> anyhow::Result<ModuleLoaderOutput> {
     if self.input_options.input.is_empty() {
       return Err(anyhow::format_err!("You must supply options.input to rolldown"));
     }
 
     let mut errors = vec![];
-    let mut all_warnings: Vec<BuildError> = Vec::new();
+    let mut all_warnings: Vec<BuildError> = vec![];
 
-    self
-      .intermediate_normal_modules
-      .modules
-      .reserve(user_defined_entries.len() + 1 /* runtime */);
-    self
-      .intermediate_normal_modules
-      .ast_table
-      .reserve(user_defined_entries.len() + 1 /* runtime */);
+    let entries_count = user_defined_entries.len() + /* runtime */ 1;
+    self.intermediate_normal_modules.modules.reserve(entries_count);
+    self.intermediate_normal_modules.ast_table.reserve(entries_count);
 
     // Store the already consider as entry module
     let mut user_defined_entry_ids = FxHashSet::with_capacity(user_defined_entries.len());
@@ -191,8 +186,8 @@ impl ModuleLoader {
     let mut entry_points = user_defined_entries
       .into_iter()
       .map(|(name, info)| EntryPoint {
-        name,
-        id: self.try_spawn_new_task(info, true).expect_normal(),
+        name: Some(name),
+        id: self.try_spawn_new_task(info, /* is_user_defined_entry */ true).expect_normal(),
         kind: EntryPointKind::UserDefined,
       })
       .inspect(|e| {
@@ -249,8 +244,7 @@ impl ModuleLoader {
           self.symbols.add_ast_symbols(module_id, ast_symbol);
         }
         Msg::RuntimeNormalModuleDone(task_result) => {
-          let RuntimeNormalModuleTaskResult { ast_symbol, module, runtime, warnings: _, ast } =
-            task_result;
+          let RuntimeNormalModuleTaskResult { ast_symbol, module, runtime, ast } = task_result;
 
           self.intermediate_normal_modules.modules[self.runtime_id] = Some(module);
           self.intermediate_normal_modules.ast_table[self.runtime_id] = Some(ast);
@@ -292,7 +286,7 @@ impl ModuleLoader {
       self.intermediate_normal_modules.ast_table.into_iter().flatten().collect();
 
     let mut dynamic_import_entry_ids = dynamic_import_entry_ids.into_iter().collect::<Vec<_>>();
-    dynamic_import_entry_ids.sort_by_key(|id| &modules[*id].stable_resource_id);
+    dynamic_import_entry_ids.sort_unstable_by_key(|id| &modules[*id].stable_resource_id);
 
     entry_points.extend(dynamic_import_entry_ids.into_iter().map(|id| EntryPoint {
       name: None,

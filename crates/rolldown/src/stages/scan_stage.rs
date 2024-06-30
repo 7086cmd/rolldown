@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use futures::future::join_all;
-use oxc_index::IndexVec;
+use oxc::index::IndexVec;
 use rolldown_common::{EntryPoint, ImportKind, ModuleTable, NormalModuleId, ResolvedRequestInfo};
 use rolldown_error::BuildError;
 use rolldown_fs::OsFileSystem;
@@ -49,12 +49,14 @@ impl ScanStage {
 
   #[tracing::instrument(level = "debug", skip_all)]
   pub async fn scan(&mut self) -> anyhow::Result<ScanStageOutput> {
-    assert!(!self.input_options.input.is_empty(), "You must supply options.input to rolldown");
+    if self.input_options.input.is_empty() {
+      return Err(anyhow::format_err!("You must supply options.input to rolldown"));
+    }
 
     let module_loader = ModuleLoader::new(
       Arc::clone(&self.input_options),
       Arc::clone(&self.plugin_driver),
-      self.fs.clone(),
+      self.fs,
       Arc::clone(&self.resolver),
     );
 
@@ -85,9 +87,7 @@ impl ScanStage {
   /// Resolve `InputOptions.input`
 
   #[tracing::instrument(level = "debug", skip_all)]
-  async fn resolve_user_defined_entries(
-    &mut self,
-  ) -> Result<Vec<(Option<String>, ResolvedRequestInfo)>> {
+  async fn resolve_user_defined_entries(&mut self) -> Result<Vec<(String, ResolvedRequestInfo)>> {
     let resolver = &self.resolver;
     let plugin_driver = &self.plugin_driver;
 

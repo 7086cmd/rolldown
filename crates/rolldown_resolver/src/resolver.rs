@@ -66,9 +66,12 @@ impl<F: FileSystem + Default> Resolver<F> {
     };
 
     let resolve_options_with_default_conditions = OxcResolverOptions {
-      tsconfig: raw_resolve.tsconfig_filename.map(|p| TsconfigOptions {
-        config_file: p.into(),
-        references: oxc_resolver::TsconfigReferences::Disabled,
+      tsconfig: raw_resolve.tsconfig_filename.map(|p| {
+        let path = PathBuf::from(&p);
+        TsconfigOptions {
+          config_file: if path.is_relative() { cwd.join(path) } else { path },
+          references: oxc_resolver::TsconfigReferences::Disabled,
+        }
       }),
       alias: raw_resolve
         .alias
@@ -90,9 +93,9 @@ impl<F: FileSystem + Default> Resolver<F> {
         .exports_fields
         .unwrap_or_else(|| vec![vec!["exports".to_string()]]),
       extension_alias: vec![],
-      extensions: raw_resolve
-        .extensions
-        .unwrap_or_else(|| [".jsx", ".js"].into_iter().map(str::to_string).collect()),
+      extensions: raw_resolve.extensions.unwrap_or_else(|| {
+        [".jsx", ".js", ".ts", ".tsx"].into_iter().map(str::to_string).collect()
+      }),
       fallback: vec![],
       fully_specified: false,
       main_fields,
@@ -204,9 +207,11 @@ impl<F: FileSystem + Default> Resolver<F> {
     if let Some(v) = self.package_json_cache.get(&oxc_pkg_json.realpath) {
       Arc::clone(v.value())
     } else {
-      let pkg_json =
-        PackageJson::new(Arc::clone(oxc_pkg_json.raw_json()), oxc_pkg_json.path.clone());
-      let pkg_json = Arc::new(pkg_json);
+      let pkg_json = Arc::new(
+        PackageJson::new(oxc_pkg_json.path.clone())
+          .with_type(oxc_pkg_json.r#type.as_ref())
+          .with_side_effects(oxc_pkg_json.side_effects.as_ref()),
+      );
       self.package_json_cache.insert(oxc_pkg_json.realpath.clone(), Arc::clone(&pkg_json));
       pkg_json
     }
@@ -222,7 +227,7 @@ fn calc_module_type(info: &Resolution) -> ModuleDefFormat {
     }
   }
   if let Some(package_json) = info.package_json() {
-    let type_value = package_json.raw_json().get("type").and_then(|v| v.as_str());
+    let type_value = package_json.r#type.as_ref().and_then(|v| v.as_str());
     if type_value == Some("module") {
       return ModuleDefFormat::EsmPackageJson;
     } else if type_value == Some("commonjs") {

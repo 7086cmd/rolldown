@@ -1,7 +1,7 @@
 use oxc::{
   allocator::{self, Allocator, Box},
-  ast::ast::{self, Statement},
-  span::{Atom, Span, SPAN},
+  ast::ast::{self, Statement, StaticMemberExpression},
+  span::{Atom, CompactStr, Span, SPAN},
   syntax::operator::UnaryOperator,
 };
 
@@ -38,6 +38,26 @@ impl<'ast> AstSnippet<'ast> {
 
   pub fn id_ref_expr(&self, name: PassedStr, span: Span) -> ast::Expression<'ast> {
     ast::Expression::Identifier(self.id_ref(name, span).into_in(self.alloc))
+  }
+
+  pub fn member_expr_or_ident_ref(
+    &self,
+    object: PassedStr,
+    names: &[CompactStr],
+    span: Span,
+  ) -> ast::Expression<'ast> {
+    match names {
+      [] => ast::Expression::Identifier(self.id_ref(object, span).into_in(self.alloc)),
+      _ => ast::Expression::StaticMemberExpression(
+        StaticMemberExpression {
+          span,
+          object: self.member_expr_or_ident_ref(object, &names[0..names.len() - 1], span),
+          property: self.id_name(names[names.len() - 1].as_str(), span),
+          optional: false,
+        }
+        .into_in(self.alloc),
+      ),
+    }
   }
 
   /// `[object].[property]`
@@ -344,12 +364,12 @@ impl<'ast> AstSnippet<'ast> {
   /// ```js
   /// 42
   /// ```
-  pub fn number_expr(&self, value: f64) -> ast::Expression<'ast> {
+  pub fn number_expr(&self, value: f64, raw: &str) -> ast::Expression<'ast> {
     ast::Expression::NumericLiteral(
       ast::NumericLiteral {
         span: TakeIn::dummy(self.alloc),
         value,
-        raw: self.alloc.alloc(value.to_string()),
+        raw: self.alloc.alloc_str(raw),
         base: oxc::syntax::number::NumberBase::Decimal,
       }
       .into_in(self.alloc),
@@ -391,7 +411,7 @@ impl<'ast> AstSnippet<'ast> {
     ast::Expression::UnaryExpression(
       ast::UnaryExpression {
         operator: UnaryOperator::Void,
-        argument: self.number_expr(0.0),
+        argument: self.number_expr(0.0, "0"),
         ..TakeIn::dummy(self.alloc)
       }
       .into_in(self.alloc),

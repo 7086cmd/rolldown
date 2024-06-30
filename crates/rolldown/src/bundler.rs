@@ -15,7 +15,6 @@ use rolldown_common::SharedFileEmitter;
 use rolldown_error::BuildError;
 use rolldown_fs::{FileSystem, OsFileSystem};
 use rolldown_plugin::{BoxPlugin, HookBuildEndArgs, HookRenderErrorArgs, SharedPluginDriver};
-use sugar_path::SugarPath;
 use tracing_chrome::FlushGuard;
 
 pub struct Bundler {
@@ -40,31 +39,27 @@ impl Bundler {
 impl Bundler {
   #[tracing::instrument(level = "debug", skip_all)]
   pub async fn write(&mut self) -> Result<BundleOutput> {
-    let dir = self.options.cwd.as_path().join(&self.options.dir).to_string_lossy().to_string();
+    let dir = self.options.cwd.join(&self.options.dir);
 
-    let mut output = self.bundle_up(true).await?;
+    let mut output = self.bundle_up(/* is_write */ true).await?;
 
     self.plugin_driver.write_bundle(&mut output.assets).await?;
 
-    self.fs.create_dir_all(dir.as_path()).map_err(|err| {
-      anyhow::anyhow!(
-        "Could not create directory for output chunks: {:?} \ncwd: {}",
-        dir.as_path(),
-        self.options.cwd.display()
-      )
-      .context(err)
+    self.fs.create_dir_all(&dir).map_err(|err| {
+      anyhow::anyhow!("Could not create directory for output chunks: {:?}", dir).context(err)
     })?;
+
     for chunk in &output.assets {
-      let dest = dir.as_path().join(chunk.filename());
+      let dest = dir.join(chunk.filename());
       if let Some(p) = dest.parent() {
         if !self.fs.exists(p) {
           self.fs.create_dir_all(p).unwrap();
         }
       };
-      self.fs.write(dest.as_path(), chunk.content_as_bytes()).map_err(|err| {
-        anyhow::anyhow!("Failed to write file in {:?}", dir.as_path().join(chunk.filename()))
-          .context(err)
-      })?;
+      self
+        .fs
+        .write(&dest, chunk.content_as_bytes())
+        .map_err(|err| anyhow::anyhow!("Failed to write file in {:?}", dest).context(err))?;
     }
 
     Ok(output)
@@ -72,36 +67,32 @@ impl Bundler {
 
   #[tracing::instrument(level = "debug", skip_all)]
   pub async fn generate(&mut self) -> Result<BundleOutput> {
-    self.bundle_up(false).await
+    self.bundle_up(/* is_write */ false).await
   }
 
   pub async fn scan(&mut self) -> Result<ScanStageOutput> {
     self.plugin_driver.build_start().await?;
 
-    let ret = ScanStage::new(
+    let scan_stage_output = ScanStage::new(
       Arc::clone(&self.options),
       Arc::clone(&self.plugin_driver),
-      self.fs.clone(),
+      self.fs,
       Arc::clone(&self.resolver),
     )
     .scan()
     .await;
 
-    {
-      let args =
-        Self::normalize_error(&ret, |ret| &ret.errors).map(|error| HookBuildEndArgs { error });
+    let args = Self::normalize_error(&scan_stage_output, |ret| &ret.errors)
+      .map(|error| HookBuildEndArgs { error });
 
-      self.plugin_driver.build_end(args.as_ref()).await?;
-    }
+    self.plugin_driver.build_end(args.as_ref()).await?;
 
-    ret
+    scan_stage_output
   }
 
   async fn try_build(&mut self) -> Result<LinkStageOutput> {
     let build_info = self.scan().await?;
-
-    let link_stage = LinkStage::new(build_info, &self.options);
-    Ok(link_stage.link())
+    Ok(LinkStage::new(build_info, &self.options).link())
   }
 
   async fn bundle_up(&mut self, is_write: bool) -> Result<BundleOutput> {
@@ -109,17 +100,17 @@ impl Bundler {
 
     self.plugin_driver.render_start().await?;
 
-    let mut generate_stage =
-      GenerateStage::new(&mut link_stage_output, &self.options, &self.plugin_driver);
-
     let mut output = {
-      let ret = generate_stage.generate().await;
+      let bundle_output =
+        GenerateStage::new(&mut link_stage_output, &self.options, &self.plugin_driver)
+          .generate()
+          .await;
 
-      if let Some(error) = Self::normalize_error(&ret, |ret| &ret.errors) {
+      if let Some(error) = Self::normalize_error(&bundle_output, |ret| &ret.errors) {
         self.plugin_driver.render_error(&HookRenderErrorArgs { error }).await?;
       }
 
-      ret?
+      bundle_output?
     };
 
     // Add additional files from build plugins.
