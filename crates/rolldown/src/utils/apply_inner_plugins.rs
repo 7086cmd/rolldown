@@ -7,4 +7,5 @@ use rolldown_plugin::__inner::SharedPluginable;
 /// we need to apply these plugins after user's plugins to control the final order of plugins.
 pub fn apply_inner_plugins(user_plugins: &mut Vec<SharedPluginable>) {
   user_plugins.push(Arc::new(rolldown_plugin_data_url::DataUrlPlugin::default()));
+  user_plugins.push(Arc::new(rolldown_plugin_http_resolve::HttpResolvePlugin::default()));
 }
