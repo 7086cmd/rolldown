@@ -2656,6 +2656,7 @@ version = "0.0.1"
 dependencies = [
  "anyhow",
  "dashmap 6.0.1",
+ "oxc",
  "phf 0.11.2",
  "reqwest",
  "rolldown_common",

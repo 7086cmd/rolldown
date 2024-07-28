@@ -15,6 +15,7 @@ rolldown_common = { workspace = true }
 rolldown_plugin = { workspace = true }
 rolldown_utils  = { workspace = true }
 rustc-hash      = { workspace = true }
+oxc             = { workspace = true, features = ['transformer', 'codegen'] }
 url             = { workspace = true }
 
 [lints]
