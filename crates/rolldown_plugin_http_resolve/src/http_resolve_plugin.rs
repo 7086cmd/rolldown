@@ -8,6 +8,7 @@ use rolldown_plugin::{
 use rustc_hash::FxBuildHasher;
 use std::borrow::Cow;
 use std::future::Future;
+use crate::transformer::transform_source;
 
 #[derive(Debug)]
 pub struct ResolvedHttpUrl {
@@ -35,6 +36,7 @@ impl Plugin for HttpResolvePlugin {
         return Ok(None);
       };
       let body = fetch_module(&url).await?;
+      let body = transform_source(&body, url.as_str())?;
       let module_type = ModuleType::from_known_str(get_extension(&url).unwrap_or(""))?;
       self
         .resolved_http_url

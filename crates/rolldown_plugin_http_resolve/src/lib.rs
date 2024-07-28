@@ -1,5 +1,5 @@
 mod http_resolve_plugin;
-mod utils;
 mod transformer;
+mod utils;
 
 pub use http_resolve_plugin::HttpResolvePlugin;
