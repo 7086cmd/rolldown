@@ -1,7 +1,6 @@
-use crate::utils::chunk::collect_render_chunk_imports::{
-  collect_render_chunk_imports, RenderImportDeclarationSpecifier,
-};
+use crate::ecmascript::format::AddRawString;
 use crate::utils::chunk::namespace_marker::render_namespace_markers;
+use crate::utils::chunk::render_interop::render_interop_chunk_imports;
 use crate::{
   ecmascript::ecma_generator::RenderedModuleSources,
   types::generator::GenerateContext,
@@ -29,9 +28,7 @@ pub fn render_iife(
 ) -> DiagnosableResult<ConcatSource> {
   let mut concat_source = ConcatSource::default();
 
-  if let Some(banner) = banner {
-    concat_source.add_source(Box::new(RawSource::new(banner)));
-  }
+  concat_source.add_optional_raw(banner);
 
   // iife wrapper start
   let export_items = get_export_items(ctx.chunk, ctx.link_output);
@@ -46,7 +43,7 @@ pub fn render_iife(
   let export_mode = determine_export_mode(ctx, entry_module, &export_items)?;
   let named_exports = matches!(&export_mode, OutputExports::Named);
 
-  let (import_code, externals) = render_iife_chunk_imports(ctx);
+  let (import_code, externals) = render_interop_chunk_imports(ctx);
 
   let (input_args, output_args) =
     render_iife_arguments(ctx, &externals, has_exports && named_exports);
@@ -65,22 +62,17 @@ pub fn render_iife(
   ))));
 
   if determine_use_strict(ctx) {
-    concat_source.add_source(Box::new(RawSource::new("\"use strict\";".to_string())));
+    concat_source.add_raw("\"use strict\";".to_string());
   }
 
-  if let Some(intro) = intro {
-    concat_source.add_source(Box::new(RawSource::new(intro)));
-  }
+  concat_source.add_optional_raw(intro);
 
   if named_exports {
-    if let Some(marker) =
-      render_namespace_markers(&ctx.options.es_module, has_default_export, false)
-    {
-      concat_source.add_source(Box::new(RawSource::new(marker.into())));
-    }
+    let marker = render_namespace_markers(&ctx.options.es_module, has_default_export, false);
+    concat_source.add_optional_raw(marker);
   }
 
-  concat_source.add_source(Box::new(RawSource::new(import_code)));
+  concat_source.add_raw(import_code);
 
   // chunk content
   // TODO indent chunk content for iife format
@@ -93,76 +85,26 @@ pub fn render_iife(
   });
 
   // iife exports
-  if let Some(exports) = render_chunk_exports(ctx, Some(&export_mode)) {
-    concat_source.add_source(Box::new(RawSource::new(exports)));
-  }
+  let exports = render_chunk_exports(ctx, Some(&export_mode));
+  concat_source.add_optional_raw(exports);
 
-  if let Some(outro) = outro {
-    concat_source.add_source(Box::new(RawSource::new(outro)));
-  }
+  concat_source.add_optional_raw(outro);
 
   if named_exports && has_exports {
     // We need to add `return exports;` here only if using `named`, because the default value is returned when using `default` in `render_chunk_exports`.
-    concat_source.add_source(Box::new(RawSource::new("return exports;".to_string())));
+    concat_source.add_raw("return exports;".to_string());
   }
 
   // iife wrapper end
   if invoke {
-    concat_source.add_source(Box::new(RawSource::new(format!("}})({output_args});"))));
+    concat_source.add_raw(format!("}})({output_args});"));
   } else {
-    concat_source.add_source(Box::new(RawSource::new("})".to_string())));
+    concat_source.add_raw("})".to_string());
   }
 
-  if let Some(footer) = footer {
-    concat_source.add_source(Box::new(RawSource::new(footer)));
-  }
+  concat_source.add_optional_raw(footer);
 
   Ok(concat_source)
-}
-
-// Handling external imports needs to modify the arguments of the wrapper function.
-fn render_iife_chunk_imports(ctx: &GenerateContext<'_>) -> (String, Vec<String>) {
-  let render_import_stmts =
-    collect_render_chunk_imports(ctx.chunk, ctx.link_output, ctx.chunk_graph);
-
-  let mut s = String::new();
-  let externals: Vec<String> = render_import_stmts
-    .iter()
-    .filter_map(|stmt| {
-      let require_path_str = &stmt.path;
-      match &stmt.specifiers {
-        RenderImportDeclarationSpecifier::ImportSpecifier(specifiers) => {
-          // Empty specifiers can be ignored in IIFE.
-          if specifiers.is_empty() {
-            None
-          } else {
-            let specifiers = specifiers
-              .iter()
-              .map(|specifier| {
-                if let Some(alias) = &specifier.alias {
-                  format!("{}: {alias}", specifier.imported)
-                } else {
-                  specifier.imported.to_string()
-                }
-              })
-              .collect::<Vec<_>>();
-            s.push_str(&format!(
-              "const {{ {} }} = {};\n",
-              specifiers.join(", "),
-              legitimize_identifier_name(&stmt.path)
-            ));
-            Some(require_path_str.to_string())
-          }
-        }
-        RenderImportDeclarationSpecifier::ImportStarSpecifier(alias) => {
-          s.push_str(&format!("const {alias} = {};\n", legitimize_identifier_name(&stmt.path)));
-          Some(require_path_str.to_string())
-        }
-      }
-    })
-    .collect();
-
-  (s, externals)
 }
 
 fn render_iife_arguments(

@@ -1,15 +1,13 @@
+use crate::ecmascript::format::AddRawString;
 use crate::utils::chunk::determine_export_mode::determine_export_mode;
 use crate::utils::chunk::namespace_marker::render_namespace_markers;
 use crate::utils::chunk::render_chunk_exports::get_export_items;
+use crate::utils::chunk::render_interop::render_interop_chunk_imports;
 use crate::{
   ecmascript::ecma_generator::RenderedModuleSources,
   types::generator::GenerateContext,
   utils::chunk::{
-    collect_render_chunk_imports::{
-      collect_render_chunk_imports, RenderImportDeclarationSpecifier,
-    },
-    determine_use_strict::determine_use_strict,
-    render_chunk_exports::render_chunk_exports,
+    determine_use_strict::determine_use_strict, render_chunk_exports::render_chunk_exports,
   },
 };
 use rolldown_common::{ChunkKind, ExportsKind, Module, OutputExports, WrapKind};
@@ -26,17 +24,13 @@ pub fn render_cjs(
 ) -> DiagnosableResult<ConcatSource> {
   let mut concat_source = ConcatSource::default();
 
-  if let Some(banner) = banner {
-    concat_source.add_source(Box::new(RawSource::new(banner)));
-  }
+  concat_source.add_optional_raw(banner);
 
   if determine_use_strict(ctx) {
     concat_source.add_source(Box::new(RawSource::new("\"use strict\";".to_string())));
   }
 
-  if let Some(intro) = intro {
-    concat_source.add_source(Box::new(RawSource::new(intro)));
-  }
+  concat_source.add_optional_raw(intro);
 
   // Note that the determined `export_mode` should be used in `render_chunk_exports` to render exports.
   // We also need to get the export mode for rendering the namespace markers.
@@ -49,27 +43,26 @@ pub fn render_cjs(
         let export_mode = determine_export_mode(ctx, entry_module, &export_items)?;
         // Only `named` export can we render the namespace markers.
         if matches!(&export_mode, OutputExports::Named) {
-          if let Some(marker) =
-            render_namespace_markers(&ctx.options.es_module, has_default_export, false)
-          {
-            concat_source.add_source(Box::new(RawSource::new(marker.into())));
-          }
+          let marker = render_namespace_markers(&ctx.options.es_module, has_default_export, false);
+          concat_source.add_optional_raw(marker);
         }
         let meta = &ctx.link_output.metas[entry_id];
         meta.require_bindings_for_star_exports.iter().for_each(|(importee_idx, binding_ref)| {
           let importee = &ctx.link_output.module_table.modules[*importee_idx];
           let binding_ref_name =
             ctx.link_output.symbols.canonical_name_for(*binding_ref, &ctx.chunk.canonical_names);
-            let import_stmt =
-"Object.keys($NAME).forEach(function (k) {
+            let import_stmt = "Object.keys($NAME).forEach(function (k) {
   if (k !== 'default' && !Object.prototype.hasOwnProperty.call(exports, k)) Object.defineProperty(exports, k, {
     enumerable: true,
     get: function () { return $NAME[k]; }
   });
-});".replace("$NAME", binding_ref_name);
+});
+".replace("$NAME", binding_ref_name);
 
-          concat_source.add_source(Box::new(RawSource::new(format!("var {} = require(\"{}\");", binding_ref_name,&importee.stable_id()))));
-          concat_source.add_source(Box::new(RawSource::new(import_stmt)));
+          concat_source.add_raw(format!("var {} = require(\"{}\");", binding_ref_name, &importee.stable_id()));
+
+          concat_source.add_raw(import_stmt);
+
         });
         Some(export_mode)
       } else {
@@ -77,7 +70,8 @@ pub fn render_cjs(
         None
       }
     } else {
-      unreachable!("Entry module should be an ECMAScript module");
+      // The entry module should always be an ECMAScript module, so it is unreachable.
+      None
     }
   } else {
     // No need for common chunks to determine the export mode.
@@ -100,7 +94,9 @@ pub fn render_cjs(
     _ => {}
   }
 
-  concat_source.add_source(Box::new(RawSource::new(render_cjs_chunk_imports(ctx))));
+  let (imports, _) = render_interop_chunk_imports(ctx);
+
+  concat_source.add_raw(imports);
 
   // chunk content
   module_sources_peekable.for_each(|(_, _, module_render_output)| {
@@ -119,15 +115,14 @@ pub fn render_cjs(
         let wrapper_ref = entry_meta.wrapper_ref.as_ref().unwrap();
         let wrapper_ref_name =
           ctx.link_output.symbols.canonical_name_for(*wrapper_ref, &ctx.chunk.canonical_names);
-        concat_source.add_source(Box::new(RawSource::new(format!("{wrapper_ref_name}();",))));
+        concat_source.add_raw(format!("{wrapper_ref_name}();",));
       }
       WrapKind::Cjs => {
         // "export default require_xxx();"
         let wrapper_ref = entry_meta.wrapper_ref.as_ref().unwrap();
         let wrapper_ref_name =
           ctx.link_output.symbols.canonical_name_for(*wrapper_ref, &ctx.chunk.canonical_names);
-        concat_source
-          .add_source(Box::new(RawSource::new(format!("export default {wrapper_ref_name}();\n"))));
+        concat_source.add_raw(format!("export default {wrapper_ref_name}();\n"));
       }
       WrapKind::None => {}
     }
@@ -135,90 +130,12 @@ pub fn render_cjs(
 
   let export_mode = export_mode.unwrap_or(OutputExports::Auto);
 
-  if let Some(exports) = render_chunk_exports(ctx, Some(&export_mode)) {
-    concat_source.add_source(Box::new(RawSource::new(exports)));
-  }
+  let exports = render_chunk_exports(ctx, Some(&export_mode));
+  concat_source.add_optional_raw(exports);
 
-  if let Some(outro) = outro {
-    concat_source.add_source(Box::new(RawSource::new(outro)));
-  }
+  concat_source.add_optional_raw(outro);
 
-  if let Some(footer) = footer {
-    concat_source.add_source(Box::new(RawSource::new(footer)));
-  }
+  concat_source.add_optional_raw(footer);
 
   Ok(concat_source)
-}
-
-fn render_cjs_chunk_imports(ctx: &GenerateContext<'_>) -> String {
-  let render_import_stmts =
-    collect_render_chunk_imports(ctx.chunk, ctx.link_output, ctx.chunk_graph);
-
-  let mut s = String::new();
-
-  // render imports from other chunks
-  ctx.chunk.imports_from_other_chunks.iter().for_each(|(exporter_id, _items)| {
-    let importee_chunk = &ctx.chunk_graph.chunks[*exporter_id];
-    s.push_str(&format!(
-      "const {} = require('{}');\n",
-      ctx.chunk.require_binding_names_for_other_chunks[exporter_id],
-      ctx.chunk.import_path_for(importee_chunk)
-    ));
-  });
-
-  render_import_stmts.iter().for_each(|stmt| {
-    if !stmt.is_external {
-      return;
-    }
-    let require_path_str = format!("require(\"{}\")", &stmt.path);
-    match &stmt.specifiers {
-      RenderImportDeclarationSpecifier::ImportSpecifier(specifiers) => {
-        if specifiers.is_empty() {
-          s.push_str(&format!("{require_path_str};\n"));
-        } else {
-          let specifiers = specifiers
-            .iter()
-            .map(|specifier| {
-              if let Some(alias) = &specifier.alias {
-                format!("{}: {alias}", specifier.imported)
-              } else {
-                specifier.imported.to_string()
-              }
-            })
-            .collect::<Vec<_>>();
-          s.push_str(&format!(
-            "const {{ {} }} = {};\n",
-            specifiers.join(", "),
-            if stmt.is_external {
-              let to_esm_fn_name = &ctx.chunk.canonical_names[&ctx
-                .link_output
-                .symbols
-                .par_canonical_ref_for(ctx.link_output.runtime.resolve_symbol("__toESM"))];
-
-              format!("{to_esm_fn_name}({require_path_str})")
-            } else {
-              require_path_str
-            }
-          ));
-        }
-      }
-      RenderImportDeclarationSpecifier::ImportStarSpecifier(alias) => {
-        s.push_str(&format!(
-          "const {alias} = {};\n",
-          if stmt.is_external {
-            let to_esm_fn_name = &ctx.chunk.canonical_names[&ctx
-              .link_output
-              .symbols
-              .par_canonical_ref_for(ctx.link_output.runtime.resolve_symbol("__toESM"))];
-
-            format!("{to_esm_fn_name}({require_path_str})")
-          } else {
-            require_path_str
-          }
-        ));
-      }
-    }
-  });
-
-  s
 }

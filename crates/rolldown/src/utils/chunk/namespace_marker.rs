@@ -19,14 +19,14 @@ pub fn render_namespace_markers(
   has_default_export: bool,
   // TODO namespace_to_string_tag
   namespace_to_string_tag: bool,
-) -> Option<&str> {
+) -> Option<String> {
   let es_module = determine_es_module(es_module_flag, has_default_export);
   if es_module && namespace_to_string_tag {
-    Some("Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toStringTag]: { value: 'Module' } });")
+    Some("Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toStringTag]: { value: 'Module' } });".to_string())
   } else if es_module {
-    Some("Object.defineProperty(exports, '__esModule', { value: true });")
+    Some("Object.defineProperty(exports, '__esModule', { value: true });".to_string())
   } else if namespace_to_string_tag {
-    Some("Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });")
+    Some("Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });".to_string())
   } else {
     None
   }
