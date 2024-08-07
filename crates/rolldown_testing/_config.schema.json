@@ -338,7 +338,7 @@
     "InteropMode": {
       "type": "string",
       "enum": [
-        "compact",
+        "compat",
         "auto",
         "esModule",
         "default",
