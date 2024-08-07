@@ -2,6 +2,7 @@ pub mod es_module_flag;
 pub mod experimental_options;
 pub mod filename_template;
 pub mod input_item;
+pub mod interop_mode;
 pub mod is_external;
 pub mod module_type;
 pub mod normalized_bundler_options;

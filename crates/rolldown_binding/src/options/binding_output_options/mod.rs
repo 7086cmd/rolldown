@@ -51,7 +51,8 @@ pub struct BindingOutputOptions {
   // hoistTransitiveImports: boolean;
   // indent: true | string;
   // inlineDynamicImports: boolean;
-  // interop: GetInterop;
+  #[napi(ts_type = "'auto' | 'es-module' | 'default' | 'default-only' | 'compat'")]
+  pub interop: Option<String>,
   #[derivative(Debug = "ignore")]
   #[serde(skip_deserializing)]
   #[napi(ts_type = "(chunk: RenderedChunk) => MaybePromise<VoidNullable<string>>")]

@@ -120,6 +120,7 @@ pub fn normalize_binding_options(
     dir: output_options.dir,
     sourcemap: output_options.sourcemap.map(Into::into),
     es_module: output_options.es_module.map(Into::into),
+    interop: output_options.interop.map(Into::into),
     banner: normalize_addon_option(output_options.banner),
     footer: normalize_addon_option(output_options.footer),
     intro: normalize_addon_option(output_options.intro),

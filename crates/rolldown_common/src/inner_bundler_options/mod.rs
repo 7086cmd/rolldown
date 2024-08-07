@@ -16,7 +16,7 @@ use self::types::{
   platform::Platform, resolve_options::ResolveOptions, source_map_type::SourceMapType,
   sourcemap_path_transform::SourceMapPathTransform,
 };
-use crate::{ModuleType, SourceMapIgnoreList};
+use crate::{InteropMode, ModuleType, SourceMapIgnoreList};
 
 pub mod types;
 
@@ -48,6 +48,7 @@ pub struct BundlerOptions {
   pub dir: Option<String>,
   pub format: Option<OutputFormat>,
   pub exports: Option<OutputExports>,
+  pub interop: Option<InteropMode>,
   pub globals: Option<HashMap<String, String>>,
   pub sourcemap: Option<SourceMapType>,
   pub es_module: Option<EsModuleFlag>,

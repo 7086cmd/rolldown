@@ -18,6 +18,7 @@ export function normalizeOutputOptions(
     assetFileNames,
     name,
     esModule,
+    interop,
   } = opts
   return {
     dir: dir,
@@ -37,6 +38,7 @@ export function normalizeOutputOptions(
     intro: getAddon(opts, 'intro'),
     outro: getAddon(opts, 'outro'),
     esModule: esModule ?? 'if-default-prop',
+    interop: interop ?? 'default',
     // TODO support functions
     globals: globals ?? {},
     entryFileNames: entryFileNames ?? '[name].js',

@@ -20,6 +20,7 @@ export function bindingifyOutputOptions(
     intro,
     outro,
     esModule,
+    interop,
   } = outputOptions
   return {
     dir,
@@ -49,6 +50,7 @@ export function bindingifyOutputOptions(
     // TODO(sapphi-red): support parallel plugins
     plugins: [],
     minify: outputOptions.minify,
+    interop: interop ?? 'default',
   }
 }
 

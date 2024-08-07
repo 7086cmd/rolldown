@@ -182,6 +182,16 @@
             "$ref": "#/definitions/InputItem"
           }
         },
+        "interop": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/InteropMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "intro": {
           "type": [
             "string",
@@ -324,6 +334,16 @@
           ]
         }
       }
+    },
+    "InteropMode": {
+      "type": "string",
+      "enum": [
+        "compact",
+        "auto",
+        "esModule",
+        "default",
+        "defaultOnly"
+      ]
     },
     "ModuleType": {
       "oneOf": [

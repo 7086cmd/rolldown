@@ -16,8 +16,7 @@ pub fn render_interop_chunk_imports(ctx: &GenerateContext<'_>) -> (String, Vec<S
 
   let mut s = String::new();
 
-  // In pure CJS, we need to use `require` within the chunk.
-  // In other cases, the inputted value is the argument of the wrapper function.
+  // Here we should handle the imports from other chunks. Only CJS needs this.
   if is_cjs {
     // render imports from other chunks
     ctx.chunk.imports_from_other_chunks.iter().for_each(|(exporter_id, _items)| {
@@ -30,6 +29,9 @@ pub fn render_interop_chunk_imports(ctx: &GenerateContext<'_>) -> (String, Vec<S
     });
   }
 
+  // In pure CJS, we need to use `require` within the chunk.
+  // In other cases, the inputted value is the argument of the wrapper function.
+  // Here, these formats (including IIFE, CJS, AMD, and UMD) shares the same logic.
   let externals: Vec<String> = render_import_stmts
     .iter()
     .filter_map(|stmt| {
@@ -40,7 +42,8 @@ pub fn render_interop_chunk_imports(ctx: &GenerateContext<'_>) -> (String, Vec<S
         if is_cjs { format!("require(\"{}\")", &stmt.path) } else { stmt.path.to_string() };
       match &stmt.specifiers {
         RenderImportDeclarationSpecifier::ImportSpecifier(specifiers) => {
-          // Empty specifiers can be ignored in IIFE.
+          // Empty specifiers can be ignored in wrapper function, but can't be ignored in CJS.
+          // TODO amd needs the export key still.
           if specifiers.is_empty() {
             if is_cjs {
               s.push_str(&format!("{require_path_str};\n"));
