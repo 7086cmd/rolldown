@@ -4,7 +4,7 @@ Rolldown is documented using [VitePress](https://vitepress.dev). You can find th
 
 To contribute to the documentation, you can start the docs dev server running on the project root:
 
-```
+```sh
 pnpm run docs
 ```
 
@@ -12,7 +12,7 @@ You can then edit the markdown files and see your changes instantly. The docs st
 
 If you'd like to review the built site, run in the project root:
 
-```
+```sh
 pnpm docs:build
 pnpm docs:preview
 ```
