@@ -102,11 +102,11 @@ export interface ArrowFunctionsBindingOptions {
 }
 
 export interface BindingAmdOptions {
-  id: string
-  define: string
-  autoId: boolean
-  basePath: string
-  forceJsExtensionForImports: boolean
+  id?: string
+  define?: string
+  autoId?: boolean
+  basePath?: string
+  forceJsExtensionForImports?: boolean
 }
 
 export interface BindingAssetSource {

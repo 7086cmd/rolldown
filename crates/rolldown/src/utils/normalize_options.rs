@@ -99,7 +99,7 @@ pub fn normalize_options(mut raw_options: crate::BundlerOptions) -> NormalizeOpt
     format: raw_options.format.unwrap_or(crate::OutputFormat::Esm),
     exports: raw_options.exports.unwrap_or(crate::OutputExports::Auto),
     globals,
-    amd: raw_options.amd,
+    amd: raw_options.amd.unwrap_or_default(),
     sourcemap: raw_options.sourcemap.unwrap_or(SourceMapType::Hidden),
     sourcemap_ignore_list: raw_options.sourcemap_ignore_list,
     sourcemap_path_transform: raw_options.sourcemap_path_transform,

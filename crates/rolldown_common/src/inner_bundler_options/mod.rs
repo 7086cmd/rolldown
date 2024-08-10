@@ -97,7 +97,7 @@ pub struct BundlerOptions {
     serde(deserialize_with = "deserialize_treeshake", default)
   )]
   pub treeshake: TreeshakeOptions,
-  pub amd: AmdOptions,
+  pub amd: Option<AmdOptions>,
   pub experimental: Option<ExperimentalOptions>,
   pub minify: Option<bool>,
   #[cfg_attr(

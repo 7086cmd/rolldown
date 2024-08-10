@@ -124,7 +124,7 @@ pub fn normalize_binding_options(
     footer: normalize_addon_option(output_options.footer),
     intro: normalize_addon_option(output_options.intro),
     outro: normalize_addon_option(output_options.outro),
-    amd: output_options.amd.map(Into::into).unwrap_or_default(),
+    amd: output_options.amd.map(Into::into),
     sourcemap_ignore_list,
     sourcemap_path_transform,
     exports: output_options.exports.map(|format_str| match format_str.as_str() {

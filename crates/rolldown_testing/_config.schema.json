@@ -79,12 +79,16 @@
     },
     "BundlerOptions": {
       "type": "object",
-      "required": [
-        "amd"
-      ],
       "properties": {
         "amd": {
-          "$ref": "#/definitions/AmdOptions"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/AmdOptions"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "assetFilenames": {
           "type": [
