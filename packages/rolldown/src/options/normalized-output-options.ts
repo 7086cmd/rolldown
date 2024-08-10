@@ -6,7 +6,7 @@ import type { OutputOptions } from './output-options'
 import type { RolldownPlugin } from '../plugin'
 import type { RenderedChunk } from '../binding'
 
-export type InternalModuleFormat = 'es' | 'cjs' | 'iife' | 'amd'
+export type InternalModuleFormat = 'es' | 'cjs' | 'iife'
 
 export type InternalModuleAmdOptions = {
   id: string

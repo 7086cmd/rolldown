@@ -9,7 +9,8 @@ const ModuleFormatSchema = z
   .or(z.literal('module'))
   .or(z.literal('commonjs'))
   .or(z.literal('iife'))
-  .or(z.literal('amd'))
+  // Does not apply amd as it is experimental.
+  // .or(z.literal('amd'))
   .optional()
 
 const addonFunctionSchema = z
