@@ -38,7 +38,9 @@ impl<'name> Renamer<'name> {
     // Port from https://github.com/rollup/rollup/blob/master/src/Chunk.ts#L1377-L1394.
     let manual_reserved = match format {
       OutputFormat::Esm | OutputFormat::App => vec![],
-      OutputFormat::Cjs => vec!["module", "require", "__filename", "__dirname", "exports"],
+      OutputFormat::Cjs | OutputFormat::Umd => {
+        vec!["module", "require", "__filename", "__dirname", "exports"]
+      }
       OutputFormat::Iife | OutputFormat::Amd => vec!["exports"], // Also for UMD, AMD, but we don't support them yet.
     };
     Self {

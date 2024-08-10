@@ -489,7 +489,8 @@
         "cjs",
         "app",
         "iife",
-        "amd"
+        "amd",
+        "umd"
       ]
     },
     "Platform": {

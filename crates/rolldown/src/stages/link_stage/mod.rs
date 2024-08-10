@@ -81,7 +81,9 @@ impl<'a> LinkStage<'a> {
                 }
               }
               // IIFE format will inline dynamic imported modules
-              OutputFormat::Iife | OutputFormat::Amd => Some(rec.resolved_module),
+              OutputFormat::Iife | OutputFormat::Amd | OutputFormat::Umd => {
+                Some(rec.resolved_module)
+              }
             })
             .collect(),
           star_exports_from_external_modules: module.as_ecma().map_or(vec![], |inner| {

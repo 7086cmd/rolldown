@@ -68,8 +68,13 @@ impl ExternalModules {
 
   /// Only used in UMD, for generating the list of `require`.
   #[allow(dead_code)]
-  pub fn as_cjs(&self) -> String {
-    self.modules.iter().map(External::as_cjs).collect::<Vec<String>>().join(", ")
+  pub fn as_cjs(&self, named_export: bool) -> String {
+    let base = if named_export { vec!["exports".to_string()] } else { Vec::new() };
+    base
+      .into_iter()
+      .chain(self.modules.iter().map(External::as_cjs))
+      .collect::<Vec<String>>()
+      .join(", ")
   }
 
   #[allow(dead_code)]

@@ -170,10 +170,10 @@ fn render_factory(
   has_export: bool,
   args: &ExternalModules,
 ) -> DiagnosableResult<(String, String)> {
+  let named_export = matches!(&export_mode, OutputExports::Named);
   match ctx.options.format {
     OutputFormat::Iife => {
       let (definition, assignment) = generate_identifier(ctx, export_mode, has_export, "this")?;
-      let named_export = matches!(&export_mode, OutputExports::Named);
       let export_invoker = if has_export && named_export && ctx.options.extend {
         // If using `output.extend`, the first caller argument should be `name = name || {}`,
         // then the result will be assigned to `name`.
@@ -202,27 +202,48 @@ fn render_factory(
       Ok((invoker, caller))
     }
     OutputFormat::Amd => {
-      let named_export = matches!(&export_mode, OutputExports::Named);
-      let arguments = args.as_amd(named_export);
-      let amd_id = if ctx.options.amd.auto_id {
-        format!(
-          "'{}main', ",
-          if ctx.options.amd.base_path.is_empty() {
-            String::new()
-          } else {
-            format!("{}/", ctx.options.amd.base_path)
-          }
-        )
-      } else if ctx.options.amd.id.is_empty() {
-        String::new()
-      } else {
-        format!("'{}', ", ctx.options.amd.id)
-      };
-
-      let invoker = format!("{}({}{}", ctx.options.amd.define, amd_id, arguments);
-
+      let invoker = render_amd_invoker(ctx, args, named_export);
       Ok((invoker, ")".to_string()))
+    }
+    OutputFormat::Umd => {
+      let (definition, assignment) = generate_identifier(ctx, export_mode, has_export, "global")?;
+      let exports_key =
+        if definition.is_empty() { assignment } else { format!("({definition}{assignment})") };
+
+      let cjs_arguments = args.as_cjs(named_export);
+      let amd_arguments = render_amd_invoker(ctx, args, named_export);
+      let iife_arguments = args.as_iife(ctx, exports_key.as_str());
+
+      let factory = format!("(function (global, factory) {{
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory({cjs_arguments}) :
+	typeof {0} === 'function' && {0}.amd ? {0}({amd_arguments}, factory) :
+	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory({iife_arguments});
+}})(this, ", &ctx.options.amd.define);
+      Ok((factory, ")".to_string()))
     }
     _ => unreachable!(),
   }
+}
+
+fn render_amd_invoker(
+  ctx: &GenerateContext<'_>,
+  args: &ExternalModules,
+  named_export: bool,
+) -> String {
+  let amd_arguments = args.as_amd(named_export);
+  let amd_id = if ctx.options.amd.auto_id {
+    format!(
+      "'{}main', ",
+      if ctx.options.amd.base_path.is_empty() {
+        String::new()
+      } else {
+        format!("{}/", ctx.options.amd.base_path)
+      }
+    )
+  } else if ctx.options.amd.id.is_empty() {
+    String::new()
+  } else {
+    format!("'{}', ", ctx.options.amd.id)
+  };
+  format!("{}({}{}", ctx.options.amd.define, amd_id, amd_arguments)
 }

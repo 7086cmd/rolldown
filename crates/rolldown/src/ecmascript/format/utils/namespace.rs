@@ -68,6 +68,7 @@ pub fn generate_identifier(
   root: &str,
 ) -> DiagnosableResult<(String, String)> {
   let is_iife = matches!(ctx.options.format, OutputFormat::Iife);
+  let named_export = matches!(export_mode, OutputExports::Named);
   if let Some(name) = &ctx.options.name {
     // It is same as Rollup.
     // Namespaced name.
@@ -76,15 +77,17 @@ pub fn generate_identifier(
       Ok((
         decl,
         // Extend the object if the `extend` option is enabled.
-        if ctx.options.extend && matches!(export_mode, OutputExports::Named) {
+        if ctx.options.extend && named_export {
           format!("{expr} = {expr} || {{}}")
+        } else if !is_iife && named_export {
+          format!("({expr} = {{}}")
         } else {
           expr
         },
       ))
     } else if ctx.options.extend {
       let caller = generate_caller(name.as_str());
-      if matches!(export_mode, OutputExports::Named) {
+      if named_export {
         // In named exports, the `extend` option will make the assignment disappear and
         // the modification will be done extending the existed object (the `name` option).
         Ok((String::new(), format!("{root}{caller} = {root}{caller} || {{}}")))
