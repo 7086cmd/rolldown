@@ -73,7 +73,7 @@ impl<'a> LinkStage<'a> {
             .import_records()
             .iter()
             .filter_map(|rec| match options.format {
-              OutputFormat::Cjs | OutputFormat::App | OutputFormat::Esm | OutputFormat::Amd => {
+              OutputFormat::Cjs | OutputFormat::App | OutputFormat::Esm => {
                 if matches!(rec.kind, ImportKind::DynamicImport) {
                   None
                 } else {
@@ -81,7 +81,7 @@ impl<'a> LinkStage<'a> {
                 }
               }
               // IIFE format will inline dynamic imported modules
-              OutputFormat::Iife => Some(rec.resolved_module),
+              OutputFormat::Iife | OutputFormat::Amd => Some(rec.resolved_module),
             })
             .collect(),
           ..LinkingMetadata::default()
@@ -188,7 +188,7 @@ impl<'a> LinkStage<'a> {
             }
           },
           ImportKind::DynamicImport => {
-            if matches!(self.options.format, OutputFormat::Iife) {
+            if matches!(self.options.format, OutputFormat::Iife | OutputFormat::Amd) {
               // For iife, then import() is just a require() that
               // returns a promise, so the imported file must also be wrapped
               match importee.exports_kind {
@@ -376,7 +376,7 @@ impl<'a> LinkStage<'a> {
                     }
                   },
                   ImportKind::DynamicImport => {
-                    if matches!(self.options.format, OutputFormat::Iife) {
+                    if matches!(self.options.format, OutputFormat::Iife | OutputFormat::Amd) {
                       match importee_linking_info.wrap_kind {
                         WrapKind::None => {}
                         WrapKind::Cjs => {

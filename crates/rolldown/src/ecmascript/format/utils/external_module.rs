@@ -74,13 +74,17 @@ impl ExternalModules {
 
   #[allow(dead_code)]
   pub fn as_amd(&self, named_export: bool) -> String {
-    let base = if named_export { vec!["exports".to_string()] } else { Vec::new() };
+    let base = if named_export { vec!["'exports'".to_string()] } else { Vec::new() };
     let args = base
       .into_iter()
       .chain(self.modules.iter().map(External::as_amd))
       .collect::<Vec<String>>()
       .join(", ");
-    format!("[{args}]")
+    if args.is_empty() {
+      String::new()
+    } else {
+      format!("[{args}], ")
+    }
   }
 
   pub fn as_args(&self, named_export: bool) -> String {

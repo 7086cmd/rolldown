@@ -1,0 +1,27 @@
+---
+source: crates/rolldown_testing/src/integration_test.rs
+---
+# Assets
+
+## main.mjs
+
+```js
+import requirejs from 'requirejs'
+let { define } = requirejs
+
+define((function() {
+
+
+
+//#region cjs.js
+var require_cjs = __commonJSMin((exports, module) => {
+	module.exports = 1;
+});
+
+//#endregion
+//#region main.js
+var import_cjs = __toESM(require_cjs());
+
+//#endregion
+}));
+```

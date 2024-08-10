@@ -1,0 +1,9 @@
+{
+  "config": {
+    "format": "amd",
+    "external": [
+      "node:path"
+    ]
+  },
+  "expectExecuted": false
+}

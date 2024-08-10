@@ -1591,6 +1591,22 @@ expression: "snapshot_outputs.join(\"\\n\")"
 - main-!~{000}~.mjs => main-91SdaZrf.mjs
 - share-!~{002}~.mjs => share-Ak_TT_yj.mjs
 
+# tests/rolldown/function/format/amd/basic
+
+- main-!~{000}~.mjs => main-ge85N6NI.mjs
+
+# tests/rolldown/function/format/amd/conflict_exports_key
+
+- main-!~{000}~.mjs => main-5k6aqDUo.mjs
+
+# tests/rolldown/function/format/amd/conflict_exports_key_loop
+
+- main-!~{000}~.mjs => main-MDaKPxV8.mjs
+
+# tests/rolldown/function/format/amd/external_modules
+
+- main-!~{000}~.mjs => main-TJru2suk.mjs
+
 # tests/rolldown/function/format/app/multiple_entry_modules
 
 - cube-!~{002}~.mjs => cube-UC9SFjeM.mjs

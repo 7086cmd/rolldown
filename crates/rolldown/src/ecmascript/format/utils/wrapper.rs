@@ -108,7 +108,11 @@ fn render_wrapper_function(
 
   concat_source.append_optional_raw_string(injections.outro);
 
-  if named_exports && has_exports && !ctx.options.extend {
+  if named_exports
+    && has_exports
+    && !ctx.options.extend
+    && matches!(ctx.options.format, OutputFormat::Iife)
+  {
     // We need to add `return exports;` here only if using `named`, because the default value is returned when using `default` in `render_chunk_exports`.
     concat_source.append_raw_string("return exports;".to_string());
   }
@@ -214,7 +218,7 @@ fn render_factory(
       } else {
         format!("'{}', ", ctx.options.amd.id)
       };
-      
+
       let invoker = format!("{}({}{}", ctx.options.amd.define, amd_id, arguments);
 
       Ok((invoker, ")".to_string()))
