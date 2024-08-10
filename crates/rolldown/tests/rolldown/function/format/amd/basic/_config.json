@@ -1,0 +1,7 @@
+{
+  "config": {
+    "banner": "import requirejs from 'requirejs'\nlet { define } = requirejs\n",
+    "format": "amd"
+  },
+  "expectExecuted": false
+}

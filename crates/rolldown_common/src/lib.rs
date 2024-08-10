@@ -12,6 +12,7 @@ mod types;
 pub mod bundler_options {
   pub use crate::inner_bundler_options::{
     types::{
+      amd_options::AmdOptions,
       es_module_flag::EsModuleFlag,
       filename_template::{FileNameRenderOptions, FilenameTemplate},
       inject_import::InjectImport,

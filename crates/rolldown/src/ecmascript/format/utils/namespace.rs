@@ -4,9 +4,10 @@
 //!    - If it is a namespaced name;
 //!    - If it is a valid identifier;
 //! - The `extend`: whether extends the object or not.
+
 use crate::types::generator::GenerateContext;
 use arcstr::ArcStr;
-use rolldown_common::OutputExports;
+use rolldown_common::{OutputExports, OutputFormat};
 use rolldown_error::{BuildDiagnostic, DiagnosableResult};
 use rolldown_utils::ecma_script::is_validate_assignee_identifier_name;
 
@@ -26,9 +27,9 @@ use rolldown_utils::ecma_script::is_validate_assignee_identifier_name;
 ///    ```js
 ///    this.namespace.module.hello
 ///    ```
-fn generate_namespace_definition(name: &str) -> (String, String) {
+fn generate_namespace_definition(name: &str, root: &str, newline: bool) -> (String, String) {
   let mut initial_code = String::new();
-  let mut final_code = String::from("this");
+  let mut final_code = String::from(root);
 
   let context_len = final_code.len();
   let parts: Vec<&str> = name.split('.').collect();
@@ -39,7 +40,7 @@ fn generate_namespace_definition(name: &str) -> (String, String) {
 
     if i < parts.len() - 1 {
       let callers = &final_code[context_len..];
-      initial_code.push_str(&format!("this{callers} = this{callers} || {{}};\n"));
+      initial_code.push_str(&format!("{root}{callers} = {root}{callers} || {{}};{}", if newline { ";\n" } else { ", " }));
     }
   }
 
@@ -63,11 +64,15 @@ fn generate_namespace_definition(name: &str) -> (String, String) {
 pub fn generate_identifier(
   ctx: &mut GenerateContext<'_>,
   export_mode: &OutputExports,
+  has_export: bool,
+  root: &str,
 ) -> DiagnosableResult<(String, String)> {
+  let is_iife = matches!(ctx.options.format, OutputFormat::Iife);
   if let Some(name) = &ctx.options.name {
     // It is same as Rollup.
-    if name.contains('.') {
-      let (decl, expr) = generate_namespace_definition(name);
+    // Namespaced name.
+    if name.contains('.') || !is_iife {
+      let (decl, expr) = generate_namespace_definition(name, root, is_iife);
       Ok((
         decl,
         // Extend the object if the `extend` option is enabled.
@@ -82,17 +87,17 @@ pub fn generate_identifier(
       if matches!(export_mode, OutputExports::Named) {
         // In named exports, the `extend` option will make the assignment disappear and
         // the modification will be done extending the existed object (the `name` option).
-        Ok((String::new(), format!("this{caller} = this{caller} || {{}}")))
+        Ok((String::new(), format!("{root}{caller} = {root}{caller} || {{}}")))
       } else {
         Ok((
           String::new(),
           // If there isn't a name in default export, we shouldn't assign the function to `this[""]`.
           // If there is, we should assign the function to `this["name"]`,
           // because there isn't an object that we can extend.
-          if name.is_empty() { String::new() } else { format!("this{caller}") },
+          if name.is_empty() { String::new() } else { format!("{root}{caller}") },
         ))
       }
-    } else if is_validate_assignee_identifier_name(name) {
+    } else if is_validate_assignee_identifier_name(name) && is_iife {
       // If valid, we can use the `var` statement to declare the variable.
       Ok((String::new(), format!("var {name}")))
     } else {
@@ -104,9 +109,11 @@ pub fn generate_identifier(
     // If the `name` is empty, you may be impossible to call the result.
     // But it is normal if we do not have exports.
     // However, if there is no export, it is recommended to use `app` format.
-    ctx
-      .warnings
-      .push(BuildDiagnostic::missing_name_option_for_iife_export().with_severity_warning());
+    if has_export {
+      ctx
+        .warnings
+        .push(BuildDiagnostic::missing_name_option_for_iife_export().with_severity_warning());
+    }
     Ok((String::new(), String::new()))
   }
 }
@@ -115,7 +122,7 @@ pub fn generate_identifier(
 ///
 /// - If the name is not a reserved word and not an invalid identifier, it will generate a caller like `.name`.
 /// - Otherwise, it will generate a caller like `["if"]`.
-fn generate_caller(name: &str) -> String {
+pub fn generate_caller(name: &str) -> String {
   if is_validate_assignee_identifier_name(name) {
     format!(".{name}")
   } else {
@@ -129,14 +136,14 @@ mod tests {
 
   #[test]
   fn test_generate_namespace_definition() {
-    let result = generate_namespace_definition("a.b.c");
+    let result = generate_namespace_definition("a.b.c", "this", true);
     assert_eq!(result.0, "this.a = this.a || {};\nthis.a.b = this.a.b || {};\n");
     assert_eq!(result.1, "this.a.b.c");
   }
 
   #[test]
   fn test_reserved_identifier_as_name() {
-    let result = generate_namespace_definition("1.2.3");
+    let result = generate_namespace_definition("1.2.3", "this", true);
     assert_eq!(
       result.0,
       "this[\"1\"] = this[\"1\"] || {};\nthis[\"1\"][\"2\"] = this[\"1\"][\"2\"] || {};\n"
@@ -147,7 +154,7 @@ mod tests {
   #[test]
   /// It is related a bug in rollup. Check it out in [rollup/rollup#5603](https://github.com/rollup/rollup/issues/5603).
   fn test_invalid_identifier_as_name() {
-    let result = generate_namespace_definition("toString.valueOf.constructor");
+    let result = generate_namespace_definition("toString.valueOf.constructor", "this", true);
     assert_eq!(result.0, "this.toString = this.toString || {};\nthis.toString.valueOf = this.toString.valueOf || {};\n");
     assert_eq!(result.1, "this.toString.valueOf.constructor");
   }

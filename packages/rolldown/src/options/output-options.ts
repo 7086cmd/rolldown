@@ -10,6 +10,9 @@ const ModuleFormatSchema = z
   .or(z.literal('module'))
   .or(z.literal('commonjs'))
   .or(z.literal('iife'))
+  // Does not apply amd as it is experimental.
+  // .or(z.literal('amd'))
+  .or(z.literal('umd'))
   .describe(
     `output format of the generated bundle (supports ${underline('esm')}, cjs, and iife).`,
   )
@@ -46,6 +49,15 @@ const outputOptionsSchema = z.strictObject({
     .optional(),
   sourcemapPathTransform: zodExt
     .phantom<SourcemapPathTransformOption>()
+    .optional(),
+  amd: z
+    .object({
+      id: z.string().optional(),
+      define: z.string().optional(),
+      autoId: z.boolean().optional(),
+      basePath: z.string().optional(),
+      forceJsExtensionForImports: z.boolean().optional(),
+    })
     .optional(),
   banner: z.string().or(addonFunctionSchema).optional(),
   footer: z.string().or(addonFunctionSchema).optional(),

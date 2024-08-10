@@ -109,7 +109,8 @@ impl<'me, 'ast> VisitMut<'ast> for ScopeHoistingFinalizer<'me, 'ast> {
                 match self.ctx.options.format {
                   rolldown_common::OutputFormat::Esm
                   | rolldown_common::OutputFormat::Iife
-                  | rolldown_common::OutputFormat::Cjs => {
+                  | rolldown_common::OutputFormat::Cjs
+                  | rolldown_common::OutputFormat::Amd => {
                     // Just remove the statement
                     return;
                   }
@@ -431,7 +432,10 @@ impl<'me, 'ast> VisitMut<'ast> for ScopeHoistingFinalizer<'me, 'ast> {
     };
 
     // iife inline dynamic import
-    if matches!(self.ctx.options.format, rolldown_common::OutputFormat::Iife) {
+    if matches!(
+      self.ctx.options.format,
+      rolldown_common::OutputFormat::Iife | rolldown_common::OutputFormat::Amd
+    ) {
       if let Expression::ImportExpression(import_expr) = expr {
         let rec_id = self.ctx.module.imports[&import_expr.span];
         let rec = &self.ctx.module.import_records[rec_id];

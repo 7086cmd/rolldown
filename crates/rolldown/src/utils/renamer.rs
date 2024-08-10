@@ -39,7 +39,7 @@ impl<'name> Renamer<'name> {
     let manual_reserved = match format {
       OutputFormat::Esm | OutputFormat::App => vec![],
       OutputFormat::Cjs => vec!["module", "require", "__filename", "__dirname", "exports"],
-      OutputFormat::Iife => vec!["exports"], // Also for UMD, AMD, but we don't support them yet.
+      OutputFormat::Iife | OutputFormat::Amd => vec!["exports"], // Also for UMD, AMD, but we don't support them yet.
     };
     Self {
       canonical_names: FxHashMap::default(),

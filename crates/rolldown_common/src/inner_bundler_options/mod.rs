@@ -17,7 +17,7 @@ use self::types::{
   platform::Platform, resolve_options::ResolveOptions, source_map_type::SourceMapType,
   sourcemap_path_transform::SourceMapPathTransform,
 };
-use crate::{ModuleType, SourceMapIgnoreList};
+use crate::{AmdOptions, ModuleType, SourceMapIgnoreList};
 
 pub mod types;
 
@@ -98,6 +98,7 @@ pub struct BundlerOptions {
     serde(deserialize_with = "deserialize_treeshake", default)
   )]
   pub treeshake: TreeshakeOptions,
+  pub amd: Option<AmdOptions>,
   pub experimental: Option<ExperimentalOptions>,
   pub minify: Option<bool>,
   #[cfg_attr(

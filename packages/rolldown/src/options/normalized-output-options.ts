@@ -8,6 +8,14 @@ import type { RenderedChunk } from '../binding'
 
 export type InternalModuleFormat = 'es' | 'cjs' | 'iife'
 
+export type InternalModuleAmdOptions = {
+  id: string
+  define: string
+  autoId: boolean
+  basePath: string
+  forceJsExtensionForImports: boolean
+}
+
 type AddonFunction = (chunk: RenderedChunk) => string | Promise<string>
 
 export interface NormalizedOutputOptions extends OutputOptions {
@@ -15,6 +23,7 @@ export interface NormalizedOutputOptions extends OutputOptions {
   dir: string | undefined
   format: InternalModuleFormat
   exports: 'auto' | 'named' | 'default' | 'none'
+  amd: InternalModuleAmdOptions
   sourcemap: boolean | 'inline' | 'hidden'
   sourcemapIgnoreList: SourcemapIgnoreListOption
   sourcemapPathTransform: SourcemapPathTransformOption | undefined
