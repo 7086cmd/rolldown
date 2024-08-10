@@ -21,17 +21,30 @@ use rolldown_sourcemap::ConcatSource;
 use rolldown_utils::ecma_script::legitimize_identifier_name;
 
 #[derive(Debug)]
-pub struct Injections {
+struct Injections {
   pub banner: Option<String>,
   pub footer: Option<String>,
   pub intro: Option<String>,
   pub outro: Option<String>,
 }
 
+pub fn render_wrapper(
+  ctx: &mut GenerateContext<'_>,
+  module_sources: RenderedModuleSources,
+  banner: Option<String>,
+  footer: Option<String>,
+  intro: Option<String>,
+  outro: Option<String>,
+) -> DiagnosableResult<ConcatSource> {
+  let injections = Injections { banner, footer, intro, outro };
+
+  render_wrapper_function(ctx, module_sources, injections)
+}
+
 /// The main function for rendering the IIFE format chunks.
 /// The factory, e.g. in UMD, it is the factory function. In iife, it is the declaration / assignment.
 /// The caller, e.g. in UMD and AMD, it should end up immediately; in IIFE, it should be passed with invoke arguments.
-pub fn render_wrapper_function(
+fn render_wrapper_function(
   ctx: &mut GenerateContext<'_>,
   module_sources: RenderedModuleSources,
   injections: Injections,
@@ -183,6 +196,28 @@ fn render_factory(
       };
       let invoker = format!("{definition}{assigner}");
       Ok((invoker, caller))
+    }
+    OutputFormat::Amd => {
+      let named_export = matches!(&export_mode, OutputExports::Named);
+      let arguments = args.as_amd(named_export);
+      let amd_id = if ctx.options.amd.auto_id {
+        format!(
+          "'{}main', ",
+          if ctx.options.amd.base_path.is_empty() {
+            String::new()
+          } else {
+            format!("{}/", ctx.options.amd.base_path)
+          }
+        )
+      } else if ctx.options.amd.id.is_empty() {
+        String::new()
+      } else {
+        format!("'{}', ", ctx.options.amd.id)
+      };
+      
+      let invoker = format!("{}({}{}", ctx.options.amd.define, amd_id, arguments);
+
+      Ok((invoker, ")".to_string()))
     }
     _ => unreachable!(),
   }
