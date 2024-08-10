@@ -3,6 +3,8 @@ use crate::{
   utils::{chunk::generate_rendered_chunk, render_ecma_module::render_ecma_module},
 };
 
+use super::format::{app::render_app, cjs::render_cjs, esm::render_esm};
+use crate::ecmascript::format::utils::wrapper::render_wrapper;
 use anyhow::Result;
 use rolldown_common::{
   AssetMeta, EcmaAssetMeta, ModuleId, ModuleIdx, OutputFormat, PreliminaryAsset, RenderedModule,
@@ -13,8 +15,6 @@ use rolldown_sourcemap::Source;
 use rolldown_utils::rayon::{IntoParallelRefIterator, ParallelIterator};
 use rustc_hash::FxHashMap;
 use sugar_path::SugarPath;
-use crate::ecmascript::format::utils::wrapper::render_wrapper;
-use super::format::{app::render_app, cjs::render_cjs, esm::render_esm};
 
 pub type RenderedModuleSources = Vec<(ModuleIdx, ModuleId, Option<Vec<Box<dyn Source + Send>>>)>;
 

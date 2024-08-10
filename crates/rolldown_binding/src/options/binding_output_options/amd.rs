@@ -20,7 +20,7 @@ impl From<BindingAmdOptions> for AmdOptions {
       id: value.id.unwrap_or(if auto_id { "main".to_string() } else { String::new() }),
       define: value.define.unwrap_or("define".to_string()),
       auto_id,
-      base_path: value.base_path.unwrap_or("".to_string()),
+      base_path: value.base_path.unwrap_or_default(),
       force_js_extension_for_imports: value.force_js_extension_for_imports.unwrap_or(false),
     }
   }
