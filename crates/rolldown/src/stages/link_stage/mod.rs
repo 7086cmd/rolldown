@@ -73,7 +73,7 @@ impl<'a> LinkStage<'a> {
             .import_records()
             .iter()
             .filter_map(|rec| match options.format {
-              OutputFormat::Cjs | OutputFormat::App | OutputFormat::Esm => {
+              OutputFormat::Cjs | OutputFormat::App | OutputFormat::Esm | OutputFormat::Amd => {
                 if matches!(rec.kind, ImportKind::DynamicImport) {
                   None
                 } else {

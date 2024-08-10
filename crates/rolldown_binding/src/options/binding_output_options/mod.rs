@@ -1,8 +1,11 @@
+pub mod amd;
+
 use crate::types::js_callback::MaybeAsyncJsCallback;
 use std::collections::HashMap;
 
 use super::super::types::binding_rendered_chunk::RenderedChunk;
 use super::plugin::BindingPluginOrParallelJsPluginPlaceholder;
+use crate::options::amd::BindingAmdOptions;
 use derivative::Derivative;
 use napi::threadsafe_function::ThreadsafeFunction;
 use napi_derive::napi;
@@ -91,4 +94,5 @@ pub struct BindingOutputOptions {
   // validate: boolean;
   // --- Enhanced options
   pub minify: Option<bool>,
+  pub amd: Option<BindingAmdOptions>,
 }

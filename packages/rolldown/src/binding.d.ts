@@ -101,6 +101,14 @@ export interface ArrowFunctionsBindingOptions {
   spec?: boolean
 }
 
+export interface BindingAmdOptions {
+  id: string
+  define: string
+  autoId: boolean
+  basePath: string
+  forceJsExtensionForImports: boolean
+}
+
 export interface BindingAssetSource {
   inner: string | Uint8Array
 }
@@ -232,6 +240,7 @@ export interface BindingOutputOptions {
   sourcemapIgnoreList?: (source: string, sourcemapPath: string) => boolean
   sourcemapPathTransform?: (source: string, sourcemapPath: string) => string
   minify?: boolean
+  amd?: BindingAmdOptions
 }
 
 export interface BindingPluginContextResolvedId {

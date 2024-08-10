@@ -49,9 +49,43 @@
   },
   "additionalProperties": false,
   "definitions": {
+    "AmdOptions": {
+      "type": "object",
+      "required": [
+        "auto-id",
+        "base-path",
+        "define",
+        "force-js-extension-for-imports",
+        "id"
+      ],
+      "properties": {
+        "auto-id": {
+          "type": "boolean"
+        },
+        "base-path": {
+          "type": "string"
+        },
+        "define": {
+          "type": "string"
+        },
+        "force-js-extension-for-imports": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "BundlerOptions": {
       "type": "object",
+      "required": [
+        "amd"
+      ],
       "properties": {
+        "amd": {
+          "$ref": "#/definitions/AmdOptions"
+        },
         "assetFilenames": {
           "type": [
             "string",
@@ -377,7 +411,8 @@
         "esm",
         "cjs",
         "app",
-        "iife"
+        "iife",
+        "amd"
       ]
     },
     "Platform": {

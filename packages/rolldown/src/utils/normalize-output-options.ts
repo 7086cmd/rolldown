@@ -18,6 +18,7 @@ export function normalizeOutputOptions(
     assetFileNames,
     name,
     esModule,
+    amd,
   } = opts
   return {
     dir: dir,
@@ -32,6 +33,7 @@ export function normalizeOutputOptions(
           : (relativeSourcePath: string, _sourcemapPath: string) =>
               relativeSourcePath.includes('node_modules'),
     sourcemapPathTransform,
+    amd: getAmdOptions(amd),
     banner: getAddon(opts, 'banner'),
     footer: getAddon(opts, 'footer'),
     intro: getAddon(opts, 'intro'),
@@ -47,6 +49,19 @@ export function normalizeOutputOptions(
     extend: opts.extend,
     name,
   }
+}
+
+function getAmdOptions(
+  amd: OutputOptions['amd'],
+): NormalizedOutputOptions['amd'] {
+  let result = {
+    id: amd?.id ?? '',
+    define: amd?.define ?? 'define',
+    autoId: amd?.autoId ?? true,
+    basePath: amd?.basePath ?? '',
+    forceJsExtensionForImports: amd?.forceJsExtensionForImports ?? false,
+  } as NormalizedOutputOptions['amd']
+  return result
 }
 
 function getFormat(

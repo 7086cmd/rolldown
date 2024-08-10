@@ -13,7 +13,7 @@ use super::{
   source_map_type::SourceMapType, sourcemap_ignore_list::SourceMapIgnoreList,
   sourcemap_path_transform::SourceMapPathTransform,
 };
-use crate::{EsModuleFlag, InputItem, ModuleType};
+use crate::{AmdOptions, EsModuleFlag, InputItem, ModuleType};
 
 #[derive(Debug)]
 pub struct NormalizedBundlerOptions {
@@ -50,4 +50,5 @@ pub struct NormalizedBundlerOptions {
   pub minify: bool,
   pub extend: bool,
   pub define: Vec<(/* Target to be replaced */ String, /* Replacement */ String)>,
+  pub amd: AmdOptions,
 }
