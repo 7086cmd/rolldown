@@ -216,8 +216,8 @@ fn render_factory(
 
       let factory = format!("(function (global, factory) {{
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory({cjs_arguments}) :
-	typeof {0} === 'function' && {0}.amd ? {0}({amd_arguments}, factory) :
-	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory({iife_arguments});
+	typeof {0} === 'function' && {0}.amd ? {amd_arguments}factory) :
+	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory({iife_arguments}));
 }})(this, ", &ctx.options.amd.define);
       Ok((factory, ")".to_string()))
     }

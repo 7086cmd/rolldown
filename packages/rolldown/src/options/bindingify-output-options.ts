@@ -32,6 +32,12 @@ export function bindingifyOutputOptions(
           return 'cjs'
         case 'iife':
           return 'iife'
+        // case 'amd':
+        //   return 'amd'
+        case 'umd':
+          return 'umd'
+        // case 'system':
+        //   return 'system'
       }
     })(),
     exports,

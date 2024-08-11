@@ -84,6 +84,12 @@ function getFormat(
     case 'iife': {
       return 'iife'
     }
+    
+    // case 'amd':
+    //   return 'amd'
+
+    case 'umd':
+      return 'umd'
 
     default:
       unimplemented(`output.format: ${format}`)

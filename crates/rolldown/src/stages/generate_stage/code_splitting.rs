@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 
 use itertools::Itertools;
 use oxc::index::IndexVec;
-use rolldown_common::{Chunk, ChunkIdx, ChunkKind, Module, ModuleIdx, OutputFormat};
+use rolldown_common::{Chunk, ChunkIdx, ChunkKind, Module, ModuleIdx};
 use rolldown_utils::{rustc_hash::FxHashMapExt, BitSet};
 use rustc_hash::FxHashMap;
 
@@ -80,7 +80,7 @@ impl<'a> GenerateStage<'a> {
 
   #[tracing::instrument(level = "debug", skip_all)]
   pub fn generate_chunks(&self) -> ChunkGraph {
-    if matches!(self.options.format, OutputFormat::Iife) {
+    if self.options.format.is_interop_wrapped() {
       let user_defined_entry_count =
         self.link_output.entries.iter().filter(|entry| entry.kind.is_user_defined()).count();
       debug_assert!(user_defined_entry_count == 1, "IIFE format only supports one entry point");

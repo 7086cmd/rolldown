@@ -195,7 +195,7 @@ impl<'a> LinkStage<'a> {
             }
           },
           ImportKind::DynamicImport => {
-            if matches!(self.options.format, OutputFormat::Iife | OutputFormat::Amd) {
+            if self.options.format.is_interop_wrapped() {
               // For iife, then import() is just a require() that
               // returns a promise, so the imported file must also be wrapped
               match importee.exports_kind {
@@ -377,7 +377,7 @@ impl<'a> LinkStage<'a> {
                     }
                   },
                   ImportKind::DynamicImport => {
-                    if matches!(self.options.format, OutputFormat::Iife | OutputFormat::Amd) {
+                    if self.options.format.is_interop_wrapped() {
                       match importee_linking_info.wrap_kind {
                         WrapKind::None => {}
                         WrapKind::Cjs => {

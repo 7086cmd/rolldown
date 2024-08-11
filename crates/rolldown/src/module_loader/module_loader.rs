@@ -15,7 +15,7 @@ use oxc::span::Span;
 use rolldown_common::side_effects::DeterminedSideEffects;
 use rolldown_common::{
   EntryPoint, EntryPointKind, ExternalModule, ImportKind, ImportRecordIdx, ImporterRecord, Module,
-  ModuleIdx, ModuleTable, OutputFormat, ResolvedId,
+  ModuleIdx, ModuleTable, ResolvedId,
 };
 use rolldown_error::{BuildDiagnostic, DiagnosableResult};
 use rolldown_fs::OsFileSystem;
@@ -317,7 +317,7 @@ impl ModuleLoader {
       .collect();
 
     // IIFE format should inline dynamic imports, so here not put dynamic imports to entries
-    if !matches!(self.options.format, OutputFormat::Iife | OutputFormat::Amd) {
+    if self.options.format.is_interop_wrapped() {
       let mut dynamic_import_entry_ids = dynamic_import_entry_ids.into_iter().collect::<Vec<_>>();
       dynamic_import_entry_ids.sort_unstable_by_key(|id| modules[*id].stable_id());
 
