@@ -22,7 +22,7 @@ impl OutputFormat {
   pub fn requires_scope_hoisting(&self) -> bool {
     matches!(self, Self::Esm | Self::Cjs | Self::Iife | Self::Amd | Self::Umd)
   }
-  
+
   pub fn is_interop_wrapped(&self) -> bool {
     matches!(self, Self::Iife | Self::Amd | Self::Umd)
   }

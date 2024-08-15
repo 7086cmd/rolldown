@@ -459,7 +459,7 @@ impl<'a> LinkStage<'a> {
                 declared_symbols.push(ecma_module.import_records[rec_idx].namespace_ref);
               });
             }
-            OutputFormat::Cjs | OutputFormat::Iife => {}
+            OutputFormat::Cjs | OutputFormat::Iife | OutputFormat::Amd | OutputFormat::Umd => {}
             OutputFormat::App => unreachable!(),
           }
         };

@@ -84,7 +84,7 @@ function getFormat(
     case 'iife': {
       return 'iife'
     }
-    
+
     // case 'amd':
     //   return 'amd'
 

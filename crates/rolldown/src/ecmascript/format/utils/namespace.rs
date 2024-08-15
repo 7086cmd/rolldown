@@ -40,7 +40,10 @@ fn generate_namespace_definition(name: &str, root: &str, newline: bool) -> (Stri
 
     if i < parts.len() - 1 {
       let callers = &final_code[context_len..];
-      initial_code.push_str(&format!("{root}{callers} = {root}{callers} || {{}};{}", if newline { ";\n" } else { ", " }));
+      initial_code.push_str(&format!(
+        "{root}{callers} = {root}{callers} || {{}};{}",
+        if newline { ";\n" } else { ", " }
+      ));
     }
   }
 
