@@ -14,6 +14,7 @@ use std::path::PathBuf;
 
 #[cfg(not(target_family = "wasm"))]
 use crate::{options::plugin::ParallelJsPlugin, worker_manager::WorkerManager};
+use rolldown_common::GeneratedCodeOptions;
 #[cfg(not(target_family = "wasm"))]
 use std::sync::Arc;
 
@@ -97,6 +98,8 @@ pub fn normalize_binding_options(
     }
     module_types = Some(tmp);
   }
+  
+  let generated_code: GeneratedCodeOptions = output_options.generated_code.unwrap_or_default().try_into().unwrap_or_default();
 
   let bundler_options = BundlerOptions {
     input: Some(input_options.input.into_iter().map(Into::into).collect()),
@@ -156,6 +159,7 @@ pub fn normalize_binding_options(
       .inject
       .map(|inner| inner.into_iter().map(normalize_binding_inject_import).collect()),
     external_live_bindings: output_options.external_live_bindings,
+    generated_code: Some(generated_code)
   };
 
   #[cfg(not(target_family = "wasm"))]

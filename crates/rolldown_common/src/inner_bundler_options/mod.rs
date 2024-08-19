@@ -12,10 +12,10 @@ use types::experimental_options::ExperimentalOptions;
 
 use self::types::treeshake::TreeshakeOptions;
 use self::types::{
-  es_module_flag::EsModuleFlag, input_item::InputItem, is_external::IsExternal,
-  output_exports::OutputExports, output_format::OutputFormat, output_option::AddonOutputOption,
-  platform::Platform, resolve_options::ResolveOptions, source_map_type::SourceMapType,
-  sourcemap_path_transform::SourceMapPathTransform,
+  es_module_flag::EsModuleFlag, generated_code::GeneratedCodeOptions, input_item::InputItem,
+  is_external::IsExternal, output_exports::OutputExports, output_format::OutputFormat,
+  output_option::AddonOutputOption, platform::Platform, resolve_options::ResolveOptions,
+  source_map_type::SourceMapType, sourcemap_path_transform::SourceMapPathTransform,
 };
 use crate::{ModuleType, SourceMapIgnoreList};
 
@@ -88,7 +88,7 @@ pub struct BundlerOptions {
     schemars(skip)
   )]
   pub sourcemap_path_transform: Option<SourceMapPathTransform>,
-
+  pub generated_code: Option<GeneratedCodeOptions>,
   /// Key is the file extension. The extension should start with a `.`. E.g. `".txt"`.
   pub module_types: Option<HashMap<String, ModuleType>>,
   // --- options for resolve

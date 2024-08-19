@@ -137,6 +137,15 @@ export interface BindingEmittedAsset {
   source: BindingAssetSource
 }
 
+export interface BindingGeneratedCodeOptions {
+  arrowFunctions?: boolean
+  constBindings?: boolean
+  objectShorthand?: boolean
+  preset?: 'es5' | 'es2015'
+  reservedNamesAsProps?: boolean
+  symbols?: boolean
+}
+
 export interface BindingGlobImportPluginConfig {
   root?: string
   restoreQueryExtension?: boolean
@@ -251,6 +260,7 @@ export interface BindingOutputOptions {
   externalLiveBindings?: boolean
   footer?: (chunk: RenderedChunk) => MaybePromise<VoidNullable<string>>
   format?: 'es' | 'cjs' | 'iife'
+  generatedCode?: BindingGeneratedCodeOptions
   globals?: Record<string, string>
   intro?: (chunk: RenderedChunk) => MaybePromise<VoidNullable<string>>
   outro?: (chunk: RenderedChunk) => MaybePromise<VoidNullable<string>>

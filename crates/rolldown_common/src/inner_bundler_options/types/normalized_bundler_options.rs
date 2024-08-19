@@ -14,6 +14,7 @@ use super::{
   source_map_type::SourceMapType, sourcemap_ignore_list::SourceMapIgnoreList,
   sourcemap_path_transform::SourceMapPathTransform,
 };
+use crate::inner_bundler_options::types::generated_code::GeneratedCodeOptions;
 use crate::{EsModuleFlag, InjectImport, InputItem, ModuleType};
 
 #[allow(clippy::struct_excessive_bools)] // Using raw booleans is more clear in this case
@@ -55,4 +56,5 @@ pub struct NormalizedBundlerOptions {
   pub inject: Vec<InjectImport>,
   pub oxc_inject_global_variables_config: InjectGlobalVariablesConfig,
   pub external_live_bindings: bool,
+  pub generated_code: GeneratedCodeOptions,
 }

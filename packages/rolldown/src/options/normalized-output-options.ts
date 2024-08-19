@@ -2,7 +2,7 @@ import type {
   SourcemapIgnoreListOption,
   SourcemapPathTransformOption,
 } from '../rollup'
-import type { OutputOptions } from './output-options'
+import type { GeneratedCodeOptions, OutputOptions } from './output-options'
 import type { RolldownPlugin } from '../plugin'
 import type { RenderedChunk } from '../binding'
 
@@ -27,4 +27,5 @@ export interface NormalizedOutputOptions extends OutputOptions {
   chunkFileNames: string
   assetFileNames: string
   name: string | undefined
+  generatedCode: GeneratedCodeOptions
 }

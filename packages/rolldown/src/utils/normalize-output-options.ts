@@ -1,4 +1,4 @@
-import type { OutputOptions } from '../options/output-options'
+import { generatedCodeObjectSchema, GeneratedCodeOptions, OutputOptions } from '../options/output-options'
 import { unimplemented } from './misc'
 import type { NormalizedOutputOptions } from '../options/normalized-output-options'
 
@@ -47,6 +47,21 @@ export function normalizeOutputOptions(
     extend: opts.extend,
     name,
     externalLiveBindings: opts.externalLiveBindings ?? true,
+    generatedCode: getGeneratedCode(opts.generatedCode)
+  }
+}
+
+function getGeneratedCode(generatedCode: OutputOptions['generatedCode']): GeneratedCodeOptions {
+  const generatedCodeDefault: GeneratedCodeOptions = generatedCodeObjectSchema.parse({})
+  switch (generatedCode) {
+    case 'es2015':
+    case 'es5':
+      return {
+        ...generatedCodeDefault,
+        preset: generatedCode as 'es2015' | 'es5',
+      }
+    default:
+      return generatedCode ?? generatedCodeDefault
   }
 }
 

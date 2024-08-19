@@ -53,6 +53,7 @@ export function bindingifyOutputOptions(
     plugins: [],
     minify: outputOptions.minify,
     externalLiveBindings: outputOptions.externalLiveBindings,
+    generatedCode: outputOptions.generatedCode
   }
 }
 

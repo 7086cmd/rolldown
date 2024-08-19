@@ -20,8 +20,52 @@ const addonFunctionSchema = z
   .args(zodExt.phantom<RenderedChunk>())
   .returns(z.string().or(z.promise(z.string())))
 
+export const generatedCodeObjectSchema = z.strictObject({
+  arrowFunctions: z
+    .boolean()
+    .default(false)
+    .describe('use arrow functions in generated code')
+    .optional(),
+  constBindings: z
+    .boolean()
+    .default(false)
+    .describe('use "const" instead of "var" in generated code')
+    .optional(),
+  objectShorthand: z
+    .boolean()
+    .default(false)
+    .describe('use short hand properties in generated code')
+    .optional(),
+  preset: z
+    .literal('es2015')
+    .or(z.literal('es5'))
+    .describe('code features preset of the bundled file')
+    .default('es5')
+    .optional(),
+  reservedNamesAsProps: z
+    .boolean()
+    .default(true)
+    .describe('use reserved names as properties in generated code')
+    .optional(),
+  symbols: z
+    .boolean()
+    .default(false)
+    .describe('use symbols in generated code')
+    .optional(),
+})
+
+export type GeneratedCodeOptions = z.infer<typeof generatedCodeObjectSchema>
+
+const generatedCodeSchema = z
+  .literal('es2015')
+  .or(z.literal('es5'))
+  .or(generatedCodeObjectSchema)
+  .default('es5')
+  .describe('code features of the bundled file')
+  .optional()
+
 const outputOptionsSchema = z.strictObject({
-  dir: z.string().describe('Output directory, defaults to `dist`.').optional(),
+  dir: z.string().describe('output directory, defaults to `dist`.').optional(),
   exports: z
     .literal('auto')
     .or(z.literal('named'))
@@ -72,6 +116,7 @@ const outputOptionsSchema = z.strictObject({
     .describe('use external live bindings')
     .default(true)
     .optional(),
+  generatedCode: generatedCodeSchema,
 })
 
 const getAddonDescription = (

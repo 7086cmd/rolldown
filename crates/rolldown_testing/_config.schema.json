@@ -176,6 +176,16 @@
             }
           ]
         },
+        "generatedCode": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/GeneratedCodeOptions"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "globals": {
           "type": [
             "object",
@@ -316,6 +326,45 @@
         }
       },
       "additionalProperties": false
+    },
+    "GeneratedCodeOptions": {
+      "type": "object",
+      "required": [
+        "arrowFunctions",
+        "constBindings",
+        "objectShorthand",
+        "preset",
+        "reservedNamesAsProps",
+        "symbols"
+      ],
+      "properties": {
+        "arrowFunctions": {
+          "type": "boolean"
+        },
+        "constBindings": {
+          "type": "boolean"
+        },
+        "objectShorthand": {
+          "type": "boolean"
+        },
+        "preset": {
+          "$ref": "#/definitions/GeneratedCodePreset"
+        },
+        "reservedNamesAsProps": {
+          "type": "boolean"
+        },
+        "symbols": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GeneratedCodePreset": {
+      "type": "string",
+      "enum": [
+        "es5",
+        "es2015"
+      ]
     },
     "InjectImport": {
       "title": "Usage",
